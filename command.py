@@ -7,7 +7,8 @@ from __future__ import unicode_literals
 
 import cmd
 import os
-import sys
+
+from peewee import *
 
 from models import db
 from models import Task
@@ -83,10 +84,21 @@ class Command(cmd.Cmd, object):
         """list tasks"""
 
         self.print_task('p', 'due', 'task', 'note')
+        self.print_task('-', '---', '----', '----')
         for task in Task.select():
+            query = TaskInstance.select().where(
+                TaskInstance.task == task,
+                TaskInstance.done >> None
+            ).order_by(TaskInstance.due.desc())
+
+            if query:
+                due = unicode(query[0].due)
+            else:
+                due = ''
+
             self.print_task(
                 priority=task.priority,
-                due='',
+                due=due,
                 name=task.name,
                 note=task.note
             )
