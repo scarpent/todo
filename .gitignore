@@ -4,3 +4,4 @@ htmlcov
 *.iml
 .idea
 *.sqlite
+*.out
