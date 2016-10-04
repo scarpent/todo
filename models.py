@@ -34,10 +34,10 @@ class TaskInstance(BaseModel):
 
 def get_task_list():
     subquery = (TaskInstance
-        .select(fn.Max(TaskInstance.due))
-        .where(
-        TaskInstance.task_id == Task.id,
-        TaskInstance.done >> None))
+                .select(fn.Max(TaskInstance.due))
+                .where(
+                    TaskInstance.task_id == Task.id,
+                    TaskInstance.done >> None))
 
     query = (Task
              .select(Task, TaskInstance, subquery.alias('due'))

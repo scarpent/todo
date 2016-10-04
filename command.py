@@ -86,7 +86,7 @@ class Command(cmd.Cmd, object):
         if tasks:
             sorted_tasks = sorted(
                 tasks,
-                key=util.get_date_for_sorting,
+                key=util.get_due_date_for_sorting,
                 reverse=True
             )
             self.print_task_list(sorted_tasks)
