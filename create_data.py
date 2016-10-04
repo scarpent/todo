@@ -56,6 +56,11 @@ create_instance(
     'bo knows',
     datetime(2016, 10, 7, 5, 5)
 )
+# create_instance(
+#     just,
+#     'bo knows 2',
+#     datetime(2016, 10, 8, 5, 5)
+# )
 
 db.close()
 
