@@ -8,11 +8,18 @@ from __future__ import unicode_literals
 import cmd
 import os
 
+from datetime import datetime
+
 from peewee import *
+from playhouse.shortcuts import model_to_dict
 
 from models import db
 from models import Task
 from models import TaskInstance
+
+
+DATE_FORMAT = '%Y-%m-%d'
+DATETIME_FORMAT = DATE_FORMAT + ' %H:%M'
 
 
 class Command(cmd.Cmd, object):
@@ -38,7 +45,6 @@ class Command(cmd.Cmd, object):
 
         db.connect()
 
-
     def __enter__(self):
         return self
 
@@ -53,13 +59,13 @@ class Command(cmd.Cmd, object):
         pass
 
     def default(self, line):
-        cmd, arg, line = self.parseline(line)
+        command, arg, line = self.parseline(line)
 
-        if cmd == 'EOF':
+        if command == 'EOF':
             print()
 
-        if cmd in self.aliases:
-            return self.aliases[cmd](arg)
+        if command in self.aliases:
+            return self.aliases[command](arg)
         else:
             print('*** Unknown syntax: ' + line)
 
@@ -82,29 +88,60 @@ class Command(cmd.Cmd, object):
 
     def do_list(self, arg):
         """list tasks"""
+        tasks = self.get_task_list()
+        if tasks:
+            sorted_tasks = sorted(
+                tasks,
+                key=self.get_date_for_sorting,
+                reverse=True
+            )
+            self.print_task_list(sorted_tasks)
+        else:
+            print('no tasks')
 
-        self.print_task('p', 'due', 'task', 'note')
-        self.print_task('-', '---', '----', '----')
+    @staticmethod
+    def get_date_for_sorting(x):
+        return x['due'] or datetime(1999, 12, 31)
+
+    def get_task_list(self):
+
+        tasks = []
         for task in Task.select():
-            query = TaskInstance.select().where(
+
+            open_task = TaskInstance.select().where(
                 TaskInstance.task == task,
                 TaskInstance.done >> None
             ).order_by(TaskInstance.due.desc())
 
-            if query:
-                due = unicode(query[0].due)
-            else:
-                due = ''
+            due = open_task[0].due if open_task else None
 
-            self.print_task(
-                priority=task.priority,
-                due=due,
-                name=task.name,
-                note=task.note
-            )
+            task = model_to_dict(task)
+            task['due'] = due
+            tasks.append(task)
+
+        return tasks
 
     @staticmethod
-    def print_task(priority='', due='', name='', note=''):
+    def get_date_string(d):
+        return d.strftime(DATE_FORMAT) if d else ''
+
+
+    @staticmethod
+    def get_datetime_string(d):
+        return d.strftime('%Y-%m-%d %H:%M') if d else ''
+
+    def print_task_list(self, tasks):
+        self.print_task('p', 'due', 'task', 'note')
+        self.print_task('-', '---', '----', '----')
+        for task in tasks:
+            self.print_task(
+                priority=task['priority'],
+                due=self.get_date_string(task['due']),
+                name=task['name'],
+                note=task['note']
+            )
+
+    def print_task(self, priority='', due='', name='', note=None):
         note = '' if not note else note
         print('{priority:1} {due:10} {name:30} {note}'.format(
             priority=priority,

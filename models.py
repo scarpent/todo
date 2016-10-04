@@ -26,5 +26,5 @@ class Task(BaseModel):
 class TaskInstance(BaseModel):
     task = ForeignKeyField(Task, related_name='instances')
     note = CharField(null=True)
-    due = DateField()
-    done = DateField(null=True)
+    due = DateTimeField()
+    done = DateTimeField(null=True)
