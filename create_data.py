@@ -26,10 +26,10 @@ db.connect()
 def create_task(name, note, priority):
     return Task.create(name=name, note=note, priority=priority)
 
-pencils = create_task(name='sharpen pencils', note='daily', priority=2)
-toenails = create_task(name='clip toenails', note='monthly', priority=1)
-wool = create_task(name='gather wool', note='monthly', priority=1)
-just = create_task(name='just do it', note='monthly', priority=4)
+pencils = create_task(name='sharpen pencils', note='pencil note', priority=2)
+toenails = create_task(name='clip toenails', note='clip toenails', priority=1)
+wool = create_task(name='gather wool', note=None, priority=1)
+just = create_task(name='just do it', note='bo knows', priority=4)
 
 def create_instance(task, note, due, done=None):
     return TaskInstance.create(task=task, note=note, due=due, done=done)
@@ -42,18 +42,18 @@ create_instance(
     datetime(2016, 10, 2, 15, 31),
     datetime(2016, 10, 2, 17, 45)
 )
-create_instance(pencils, '', datetime(2016, 10, 3))
+create_instance(pencils, None, datetime(2016, 10, 3))
 
 create_instance(
     wool,
-    'mammoth',
+    'yuuuuuge',
     datetime(2016, 9, 21),
     datetime(2016, 9, 27)
 )
 
 create_instance(
     just,
-    'bo knows',
+    'just think about it',
     datetime(2016, 10, 7, 5, 5)
 )
 # create_instance(
