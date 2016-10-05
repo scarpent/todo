@@ -63,12 +63,6 @@ class FileTests(TestCase):
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
-    def test_quit(self):
-        temp_db = init_temp_database()
-        args = ArgHandler.get_args(['--database', temp_db])
-        with Command(args) as interpreter:
-            self.assertTrue(interpreter.do_quit(None))
-
 
 class OutputTests(Redirector):
 
@@ -82,3 +76,12 @@ class OutputTests(Redirector):
             command.NUMBER_ERROR,
             self.redirect.getvalue().rstrip()
         )
+
+
+class MiscTests(TestCase):
+    
+    def test_quit(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            self.assertTrue(interpreter.do_quit(None))
