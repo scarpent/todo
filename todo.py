@@ -22,7 +22,7 @@ def main(argv=None):
         if args.one_command:
             interpreter.onecmd(' '.join(args.one_command.split()))
         else:
-            interpreter.cmdloop()
+            interpreter.cmdloop()  # pragma: no cover
 
 
 if __name__ == '__main__':

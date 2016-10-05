@@ -16,6 +16,10 @@ from models import TaskInstance
 from models import get_task_list
 
 
+UNKNOWN_SYNTAX = '*** Unknown syntax: '
+NO_HELP = '*** No help on '
+
+
 class Command(cmd.Cmd, object):
 
     def __init__(self, args):
@@ -28,7 +32,7 @@ class Command(cmd.Cmd, object):
         }
 
         if not args.database:
-            args.database = 'todo.sqlite'
+            args.database = 'todo.sqlite'  # pragma: no cover
 
         db.init(args.database)
         if not os.path.exists(args.database):
@@ -50,7 +54,7 @@ class Command(cmd.Cmd, object):
     prompt = '> '
 
     def emptyline(self):
-        pass
+        pass  # pragma: no cover
 
     def default(self, line):
         command, arg, line = self.parseline(line)
@@ -61,7 +65,7 @@ class Command(cmd.Cmd, object):
         if command in self.aliases:
             return self.aliases[command](arg)
         else:
-            print('*** Unknown syntax: ' + line)
+            print(UNKNOWN_SYNTAX + line)
 
     def do_help(self, arg):
         """get help for a command; syntax: help <COMMAND>"""
@@ -81,7 +85,7 @@ class Command(cmd.Cmd, object):
             ))
 
     def do_list(self, arg):
-        """list tasks"""
+        """ list tasks """
         tasks = get_task_list()
         if tasks:
             sorted_tasks = sorted(

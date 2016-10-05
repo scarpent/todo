@@ -5,14 +5,13 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import unittest
-
 from datetime import datetime
+from unittest import TestCase
 
 import util
 
 
-class UtilTests(unittest.TestCase):
+class UtilTests(TestCase):
 
     def test_get_date_for_sorting_no_date(self):
         expected = util.SORTING_NO_DATETIME

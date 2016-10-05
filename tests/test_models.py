@@ -5,9 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import unittest
-
 from datetime import datetime
+from unittest import TestCase
 
 from peewee import *
 from playhouse.test_utils import test_database
@@ -21,7 +20,7 @@ from models import get_task_list
 test_db = SqliteDatabase(':memory:')
 
 
-class ModelTests(unittest.TestCase):
+class ModelTests(TestCase):
 
     @staticmethod
     def create_test_data():
