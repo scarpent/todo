@@ -26,6 +26,8 @@ class Command(cmd.Cmd, object):
     def __init__(self, args):
         cmd.Cmd.__init__(self)
         self.aliases = {
+            'a': self.do_add,
+            'e': self.do_edit,
             'EOF': self.do_quit,
             'h': self.do_help,
             'l': self.do_list,
@@ -133,6 +135,14 @@ class Command(cmd.Cmd, object):
             name=name,
             note=note
         ))
+
+    def do_add(self, args):
+        """ add a new task """
+        pass
+
+    def do_edit(self, args):
+        """ edit an existing task """
+        pass
 
     def do_quit(self, arg):
         """exit the program"""

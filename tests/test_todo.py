@@ -47,6 +47,10 @@ class OutputTests(Redirector):
         self.simple_check(argv, 'help quit')
         self.simple_check(argv, 'help q')
         self.simple_check(argv, 'help EOF')
+        self.simple_check(argv, 'help add')
+        self.simple_check(argv, 'help a')
+        self.simple_check(argv, 'help edit')
+        self.simple_check(argv, 'help e')
 
     def simple_check(self, argv, c):
         argv[1] = c
