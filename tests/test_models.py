@@ -52,7 +52,7 @@ def create_test_data():
     pencils = Task.create(
         name='sharpen pencils', note='pencil note', priority=2
     )
-    toenails = Task.create(name='clip toenails', priority=1)
+    Task.create(name='clip toenails', priority=1)
     wool = Task.create(
         name='gather wool', note='woolly mammoth', priority=1
     )

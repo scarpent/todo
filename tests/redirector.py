@@ -8,6 +8,7 @@ from unittest import TestCase
 # unicode/str issue for cmd do_help when using io.StringIO
 from StringIO import StringIO
 
+
 class Redirector(TestCase):
 
     def setUp(self):

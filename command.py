@@ -113,7 +113,6 @@ class Command(cmd.Cmd, object):
         else:
             print('no tasks')
 
-
     def print_task_list(self, tasks):
         self.print_task('p', 'due', 'task', 'note')
         self.print_task('-', '---', '----', '----')
