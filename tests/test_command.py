@@ -85,11 +85,71 @@ class OutputTests(Redirector):
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             interpreter.do_list('abc')
-
         self.assertEqual(
             command.NUMBER_ERROR,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_syntax_error(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        bad_command = 'cthulu'
+        with Command(args) as interpreter:
+            interpreter.onecmd(bad_command)
+        self.assertEqual(
+            command.UNKNOWN_SYNTAX + bad_command,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_not_syntax_error(self):
+        """ crudely verify basic commands """
+        temp_db = init_temp_database()
+        commands = [
+            'help',
+            'h',
+            'aliases',
+            'quit',
+            'q',
+            'EOF',
+            'add',
+            'a',
+            'edit',
+            'e',
+        ]
+        for c in commands:
+            self.reset_redirect()
+            args = ArgHandler.get_args(['--database', temp_db])
+            with Command(args) as interpreter:
+                interpreter.onecmd(c)
+            self.assertFalse(
+                self.redirect.getvalue().startswith(command.UNKNOWN_SYNTAX)
+            )
+
+    def test_simple_help_check(self):
+        temp_db = init_temp_database()
+        commands = [
+            'help help',
+            'help h',
+            'h h',
+            'help aliases',
+            'help list',
+            'help l',
+            'help quit',
+            'help q',
+            'help EOF',
+            'help add',
+            'help a',
+            'help edit',
+            'help e',
+        ]
+        for c in commands:
+            self.reset_redirect()
+            args = ArgHandler.get_args(['--database', temp_db])
+            with Command(args) as interpreter:
+                interpreter.onecmd(c)
+            self.assertFalse(
+                self.redirect.getvalue().startswith(command.NO_HELP)
+            )
 
 
 class MiscTests(TestCase):
