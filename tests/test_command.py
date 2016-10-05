@@ -15,8 +15,8 @@ import command
 from arghandler import ArgHandler
 from command import Command
 from tests.redirector import Redirector
-from tests.test_models import get_temp_db
-from tests.test_models import init_database
+from tests.test_models import create_test_data_for_temp_db
+from tests.test_models import init_temp_database
 
 
 TEST_FILES_DIR = 'tests/files/'
@@ -42,9 +42,9 @@ class FileTests(TestCase):
         return expected, actual
 
     def test_list(self):
-        argv = ['--database', get_temp_db()]
-        init_database(argv, create_data=True)
-        args = ArgHandler.get_args(argv)
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
         testfile = 'test_list'
         expected, actual = self.get_expected_and_actual(testfile)
         with Command(args) as interpreter:
@@ -53,9 +53,9 @@ class FileTests(TestCase):
         self.assertTrue(filecmp.cmp(expected, actual))
 
     def test_list_priority_2(self):
-        argv = ['--database', get_temp_db()]
-        init_database(argv, create_data=True)
-        args = ArgHandler.get_args(argv)
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
         testfile = 'test_list_priority_2'
         expected, actual = self.get_expected_and_actual(testfile)
         with Command(args) as interpreter:
@@ -64,18 +64,17 @@ class FileTests(TestCase):
         self.assertTrue(filecmp.cmp(expected, actual))
 
     def test_quit(self):
-        argv = ['--database', get_temp_db()]
-        init_database(argv, create_data=False)
-        args = ArgHandler.get_args(argv)
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             self.assertTrue(interpreter.do_quit(None))
+
 
 class OutputTests(Redirector):
 
     def test_list_bad_number(self):
-        argv = ['--database', get_temp_db()]
-        init_database(argv, create_data=False)
-        args = ArgHandler.get_args(argv)
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             interpreter.do_list('abc')
 

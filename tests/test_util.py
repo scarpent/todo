@@ -13,22 +13,30 @@ import util
 
 class UtilTests(TestCase):
 
-    def test_get_date_for_sorting_no_date(self):
-        expected = util.SORTING_NO_DATETIME
+    def test_get_list_sorting_key_value_no_date(self):
+        expected = util.get_date_string(util.SORTING_NO_DATETIME) \
+                   + '9998'
         self.assertEqual(
             expected,
-            util.get_due_date_for_sorting({'due': None})
+            util.get_list_sorting_key_value({
+                'due': None,
+                'priority': 1
+            })
         )
         self.assertEqual(
             expected,
-            util.get_due_date_for_sorting({'due': ''})
+            util.get_list_sorting_key_value({
+                'due': None,
+                'priority': 1
+            })
         )
 
     def test_get_date_for_sorting(self):
         expected = datetime(2016, 10, 4, 11, 17, 45)
-        d = {'due': expected}
-        actual = util.get_due_date_for_sorting(d)
-        self.assertEqual(expected, actual)
+        expected_string = util.get_date_string(expected) + '9995'
+        d = {'due': expected, 'priority': 4}
+        actual = util.get_list_sorting_key_value(d)
+        self.assertEqual(expected_string, actual)
 
     def test_get_date_or_datetime_string_no_date(self):
         expected = ''

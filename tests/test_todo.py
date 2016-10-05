@@ -9,24 +9,20 @@ import command
 import todo
 
 from tests.redirector import Redirector
-from tests.test_models import get_temp_db
-from tests.test_models import init_database
+from tests.test_models import init_temp_database
 
 
 class OutputTests(Redirector):
 
     def test_no_tasks(self):
-        argv = ['-o', 'list', '--database', get_temp_db()]
-        init_database(argv, create_data=False)
-        todo.main(argv)
+        temp_db = init_temp_database()
+        todo.main(['-o', 'list', '--database', temp_db])
         self.assertEqual('no tasks', self.redirect.getvalue().rstrip())
 
     def test_syntax_error(self):
+        temp_db = init_temp_database()
         bad_command = 'cthulu'
-        argv = ['-o', bad_command, '--database', get_temp_db()]
-        init_database(argv, create_data=False)
-
-        todo.main(argv)
+        todo.main(['-o', bad_command, '--database', temp_db])
         self.assertEqual(
             command.UNKNOWN_SYNTAX + bad_command,
             self.redirect.getvalue().rstrip()
@@ -34,8 +30,8 @@ class OutputTests(Redirector):
 
     def test_not_syntax_error(self):
         """ crudely verify basic commands """
-        argv = ['-o', 'tbd', '--database', get_temp_db()]
-        init_database(argv, create_data=False)
+        temp_db = init_temp_database()
+        argv = ['-o', 'tbd', '--database', temp_db]
         self.simple_check(argv, 'h')
         self.simple_check(argv, 'help')
         self.simple_check(argv, 'help help')

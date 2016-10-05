@@ -14,8 +14,14 @@ DATETIME_FORMAT_SECONDS = DATETIME_FORMAT + ':%S'
 SORTING_NO_DATETIME = datetime(1999, 12, 31)
 
 
-def get_due_date_for_sorting(x):
-    return x['due'] or SORTING_NO_DATETIME
+def get_list_sorting_key_value(x):
+    due = x['due'] if x['due'] else SORTING_NO_DATETIME
+    # invert priority so that reverse sort will put lower numbers at top
+    priority = 9999 - x['priority']
+    return '{date}{priority:04d}'.format(
+        date=get_date_string(due),
+        priority=priority
+    )
 
 def get_date_string(d):
     return d.strftime(DATE_FORMAT) if d else ''

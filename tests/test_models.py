@@ -25,24 +25,27 @@ from models import get_task_list
 test_db = SqliteDatabase(':memory:')
 
 TEST_FILES_DIR = 'tests/files/'
+TEMP_DB = TEST_FILES_DIR + 'temp.sqlite'
 
 
-def init_database(argv, create_data=False):
-    args = ArgHandler.get_args(argv)
+def init_temp_database():
+    if os.path.exists(TEMP_DB):
+        os.remove(TEMP_DB)
+    args = ArgHandler.get_args(['--database', TEMP_DB])
     save_stdout = sys.stdout
     sys.stdout = open(os.devnull, 'w')  # don't want to see creation msg
     # command init and exit will take care of db creation and close
     with Command(args):
-        if create_data:
-            create_test_data()
+        pass
     sys.stdout = save_stdout
 
+    return TEMP_DB
 
-def get_temp_db():
-    temp_db = TEST_FILES_DIR + 'temp.sqlite'
-    if os.path.exists(temp_db):
-        os.remove(temp_db)
-    return temp_db
+
+def create_test_data_for_temp_db():
+    args = ArgHandler.get_args(['--database', TEMP_DB])
+    with Command(args):
+        create_test_data()
 
 
 def create_test_data():
