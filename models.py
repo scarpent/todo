@@ -32,7 +32,7 @@ class TaskInstance(BaseModel):
     done = DateTimeField(null=True)
 
 
-def get_task_list():
+def get_task_list(priority_less_than=100):
     subquery = (TaskInstance
                 .select(fn.Max(TaskInstance.due))
                 .where(
@@ -41,7 +41,8 @@ def get_task_list():
 
     query = (Task
              .select(Task, TaskInstance, subquery.alias('due'))
-             .join(TaskInstance, JOIN.LEFT_OUTER))
+             .join(TaskInstance, JOIN.LEFT_OUTER)
+             .where(Task.priority < priority_less_than))
 
     tasks = []
     for row in query.aggregate_rows():

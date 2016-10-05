@@ -18,6 +18,7 @@ from models import get_task_list
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
+NUMBER_ERROR = '*** priority must be a number'
 
 
 class Command(cmd.Cmd, object):
@@ -85,8 +86,23 @@ class Command(cmd.Cmd, object):
             ))
 
     def do_list(self, arg):
-        """ list tasks """
-        tasks = get_task_list()
+        """ list tasks
+
+        optionally specify a priority where only tasks
+        less than or equal to that priority are listed
+
+        e.g. "list 2" would list all tasks with priority 1 or 2
+        """
+        if arg:
+            try:
+                int(arg)
+            except ValueError:
+                print(NUMBER_ERROR)
+                return
+        else:
+            arg = 100
+
+        tasks = get_task_list(priority_less_than=int(arg)+1)
         if tasks:
             sorted_tasks = sorted(
                 tasks,
