@@ -14,7 +14,7 @@ import todo
 
 from arghandler import ArgHandler
 from command import Command
-from test_models import ModelTests
+from tests.test_models import ModelTests
 
 
 TEST_FILES_DIR = 'tests/files/'
@@ -31,6 +31,24 @@ class OutputTests(unittest.TestCase):
         sys.stdout = self._stdout
 
     @staticmethod
+    def get_temp_db():
+        temp_db = TEST_FILES_DIR + 'temp.sqlite'
+        if os.path.exists(temp_db):
+            os.remove(temp_db)
+        return temp_db
+
+    @staticmethod
+    def init_database(argv):
+        args = ArgHandler.get_args(argv)
+        # use command init and exit functions for db creation/close
+        save_stdout = sys.stdout
+        f = open(os.devnull, 'w')
+        sys.stdout = f
+        with Command(args):
+            ModelTests.create_test_data()
+        sys.stdout = save_stdout
+
+    @staticmethod
     def get_expected_and_actual(testfile):
 
         testfile = TEST_FILES_DIR + testfile
@@ -41,15 +59,9 @@ class OutputTests(unittest.TestCase):
         return expected, actual
 
     def test_list_tasks(self):
-        temp_db = TEST_FILES_DIR + 'temp.sqlite'
-        if os.path.exists(temp_db):
-            os.remove(temp_db)
         # -o for onecmd; l is list alias
-        argv = ['-o', 'l', '--database', temp_db]
-        # use command init and exit functions for db creation
-        args = ArgHandler.get_args(argv)
-        with Command(args):
-            ModelTests.create_test_data()
+        argv = ['-o', 'l', '--database', self.get_temp_db()]
+        self.init_database(argv)
 
         testfile = 'test_list'
         expected, actual = self.get_expected_and_actual(testfile)
