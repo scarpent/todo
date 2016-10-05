@@ -81,6 +81,17 @@ def create_test_data():
     )
 
 
+def create_sort_test_data_for_temp_db():
+    create_test_data_for_temp_db()
+    args = ArgHandler.get_args(['--database', TEMP_DB])
+    with Command(args):
+        pencil_instance = TaskInstance.get(
+            TaskInstance.due == datetime(2016, 10, 3)
+        )
+        pencil_instance.due = datetime(2016, 10, 7)
+        pencil_instance.save()
+
+
 class ModelTests(TestCase):
 
     def test_get_task_list(self):

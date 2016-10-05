@@ -16,6 +16,7 @@ from arghandler import ArgHandler
 from command import Command
 from tests.redirector import Redirector
 from tests.test_models import create_test_data_for_temp_db
+from tests.test_models import create_sort_test_data_for_temp_db
 from tests.test_models import init_temp_database
 
 
@@ -63,6 +64,19 @@ class FileTests(TestCase):
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
+    def test_list_sort(self):
+        """ higher priority item on same date sorts higher """
+        # (even if time of day is later for the lower priority item)
+        temp_db = init_temp_database()
+        create_sort_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        testfile = 'test_list_sort'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with Command(args) as interpreter:
+            interpreter.do_list(None)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
 
 class OutputTests(Redirector):
 
@@ -79,7 +93,7 @@ class OutputTests(Redirector):
 
 
 class MiscTests(TestCase):
-    
+
     def test_quit(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
