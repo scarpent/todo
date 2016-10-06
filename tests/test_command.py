@@ -115,6 +115,8 @@ class OutputTests(Redirector):
             'a',
             'edit',
             'e',
+            'history',
+            'h'
         ]
         for c in commands:
             self.reset_redirect()
@@ -129,8 +131,6 @@ class OutputTests(Redirector):
         temp_db = init_temp_database()
         commands = [
             'help help',
-            'help h',
-            'h h',
             'help aliases',
             'help list',
             'help l',
@@ -141,6 +141,8 @@ class OutputTests(Redirector):
             'help a',
             'help edit',
             'help e',
+            'help history',
+            'help h',
         ]
         for c in commands:
             self.reset_redirect()

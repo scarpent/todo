@@ -29,7 +29,7 @@ class Command(cmd.Cmd, object):
             'a': self.do_add,
             'e': self.do_edit,
             'EOF': self.do_quit,
-            'h': self.do_help,
+            'h': self.do_history,
             'l': self.do_list,
             'q': self.do_quit,
         }
@@ -142,6 +142,10 @@ class Command(cmd.Cmd, object):
 
     def do_edit(self, args):
         """ edit an existing task """
+        pass
+
+    def do_history(self, args):
+        """ print history of a task """
         pass
 
     def do_quit(self, arg):
