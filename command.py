@@ -175,7 +175,8 @@ class Command(cmd.Cmd, object):
 
         syntax: delete [task]
 
-        Priority will be set to 9 so that it is hidden.
+        - Priority will be set to 9 so that it is hidden and ignored
+        - If priority is already 9, it will be deleted forever
         """
         if not args:
             return
