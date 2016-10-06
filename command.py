@@ -91,6 +91,7 @@ class Command(cmd.Cmd, object):
                 command=self.aliases[alias].__name__[3:]
             ))
 
+    # todo: option to only list tasks due
     def do_list(self, arg):
         """List tasks
 

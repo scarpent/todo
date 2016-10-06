@@ -10,8 +10,10 @@ from unittest import TestCase
 
 import util
 
+from tests.redirector import Redirector
 
-class UtilTests(TestCase):
+
+class DateTests(TestCase):
 
     def test_get_list_sorting_key_value_no_date(self):
         expected = util.get_date_string(util.SORTING_NO_DATETIME) \
@@ -70,4 +72,26 @@ class UtilTests(TestCase):
         self.assertEqual(
             datetime(2016, 9, 4, 5, 8, 0),
             util.get_datetime('2016-09-04 05:08:00')
+        )
+
+
+class OutputTests(Redirector):
+
+    def test_valid_priority_number(self):
+        self.assertTrue(util.valid_priority_number(5))
+
+    def test_invalid_priority_number_alpha(self):
+        return_value = util.valid_priority_number('abc')
+        self.assertFalse(return_value)
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_invalid_priority_number_string_float(self):
+        return_value = util.valid_priority_number('1.7')
+        self.assertFalse(return_value)
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
         )
