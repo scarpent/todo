@@ -42,7 +42,6 @@ class FileTests(TestCase):
         expected = testfile + EXPECTED_SUFFIX
         actual = testfile + OUT_SUFFIX
         sys.stdout = open(actual, 'w')
-
         return expected, actual
 
     def test_list(self):
@@ -52,10 +51,22 @@ class FileTests(TestCase):
         testfile = 'test_list'
         expected, actual = self.get_expected_and_actual(testfile)
         with Command(args) as interpreter:
-            # default will omit priority 9 (inactive) task "goner"
+            # default will omit priority 9 (deleted) task "goner"
             interpreter.do_list(None)
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_list_with_deleted_items(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        for alias in command.TASK_DELETED_ALIASES:
+            testfile = 'test_list_with_deleted'
+            expected, actual = self.get_expected_and_actual(testfile)
+            with Command(args) as interpreter:
+                interpreter.do_list(alias)
+            sys.stdout.close()
+            self.assertTrue(filecmp.cmp(expected, actual))
 
     def test_list_priority_2(self):
         temp_db = init_temp_database()
@@ -81,17 +92,17 @@ class FileTests(TestCase):
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
-    def test_listing_with_deleted_items(self):
+    def test_sorted_listing_with_deleted_items(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_list_really_delete'
+        testfile = 'test_list_sorted_with_deletes'
         expected, actual = self.get_expected_and_actual(testfile)
         with Command(args) as interpreter:
             task = Task.get(name='sharpen pencils')
-            task.priority = util.PRIORITY_INACTIVE
+            task.priority = util.PRIORITY_DELETED
             task.save()
-            interpreter.do_list(util.PRIORITY_INACTIVE)
+            interpreter.do_list(util.PRIORITY_DELETED)
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
@@ -314,7 +325,7 @@ class DataTests(Redirector):
                 self.redirect.getvalue().rstrip()
             )
             task = Task.get(name=task_name)
-            self.assertEqual(util.PRIORITY_INACTIVE, task.priority)
+            self.assertEqual(util.PRIORITY_DELETED, task.priority)
 
     def test_delete_task_for_reals (self):
         temp_db = init_temp_database()

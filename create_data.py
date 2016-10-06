@@ -30,7 +30,7 @@ pencils = create_task(name='sharpen pencils', note='pencil note', priority=2)
 toenails = create_task(name='clip toenails', note='clip toenails', priority=1)
 wool = create_task(name='gather wool', note=None, priority=1)
 just = create_task(name='just do it', note='bo knows', priority=4)
-goner = create_task(name='goner', note="'tis inactive", priority=9)
+goner = create_task(name='goner', note="'tis deleted", priority=9)
 
 def create_instance(task, note, due, done=None):
     return TaskInstance.create(task=task, note=note, due=due, done=done)

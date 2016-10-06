@@ -61,7 +61,7 @@ def create_test_data():
     just = Task.create(
         name='just do it', note='bo knows', priority=4
     )
-    Task.create(name='goner', priority=util.PRIORITY_INACTIVE)
+    Task.create(name='goner', priority=util.PRIORITY_DELETED)
     TaskInstance.create(
         task=pencils, note='', due=datetime(2016, 10, 1)
     )
@@ -113,7 +113,7 @@ class ModelTests(TestCase):
                  'id': 3, 'name': 'gather wool'},
             ]
             with count_queries() as counter:
-                # default omits priority 9 (inactive) task "goner"
+                # default omits priority 9 (deleted) task "goner"
                 tasks = get_task_list()
             self.assertEqual(1, counter.count)
             self.assertEqual(expected, tasks)

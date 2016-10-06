@@ -27,6 +27,7 @@ TASK_ADDED = 'Added task: '
 TASK_DELETED = 'Deleted task: '
 TASK_REALLY_DELETED = 'REALLY deleted task: '
 TASK_NOT_FOUND = '*** Task not found'
+TASK_DELETED_ALIASES = ['all', 'deleted']
 
 
 class Command(cmd.Cmd, object):
@@ -109,7 +110,7 @@ class Command(cmd.Cmd, object):
         """
         if arg:
             if arg in ['all', 'deleted']:
-                arg = util.PRIORITY_INACTIVE
+                arg = util.PRIORITY_DELETED
             if not util.valid_priority_number(arg):
                 return
         else:
@@ -192,11 +193,11 @@ class Command(cmd.Cmd, object):
             print(TASK_NOT_FOUND)
             return
 
-        if task.priority == util.PRIORITY_INACTIVE:
+        if task.priority == util.PRIORITY_DELETED:
             task.delete_instance(recursive=True)
             print(TASK_REALLY_DELETED + name)
         else:
-            task.priority = util.PRIORITY_INACTIVE
+            task.priority = util.PRIORITY_DELETED
             task.save()
             print(TASK_DELETED + name)
 
