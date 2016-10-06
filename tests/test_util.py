@@ -78,7 +78,12 @@ class DateTests(TestCase):
 class OutputTests(Redirector):
 
     def test_valid_priority_number(self):
-        self.assertTrue(util.valid_priority_number(5))
+        for priority in util.ALLOWED_PRIORITIES:
+            self.assertTrue(util.valid_priority_number(priority))
+
+    def test_valid_priority_number_string(self):
+        for priority in util.ALLOWED_PRIORITIES:
+            self.assertTrue(util.valid_priority_number(str(priority)))
 
     def test_invalid_priority_number_alpha(self):
         return_value = util.valid_priority_number('abc')
@@ -90,6 +95,14 @@ class OutputTests(Redirector):
 
     def test_invalid_priority_number_string_float(self):
         return_value = util.valid_priority_number('1.7')
+        self.assertFalse(return_value)
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_invalid_priority_number_not_allowed(self):
+        return_value = util.valid_priority_number('85')
         self.assertFalse(return_value)
         self.assertEqual(
             util.PRIORITY_NUMBER_ERROR,

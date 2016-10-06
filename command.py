@@ -106,7 +106,7 @@ class Command(cmd.Cmd, object):
             if not util.valid_priority_number(arg):
                 return
         else:
-            arg = 100
+            arg = util.PRIORITY_LOW
 
         tasks = get_task_list(priority_max_value=int(arg))
         if tasks:
@@ -147,6 +147,7 @@ class Command(cmd.Cmd, object):
 
         - Default priority = 1
             (Priority must be specified if note is given)
+        - Allowed priority values: 1-4, or 9 (inactive/deleted)
         - Spaces in name require quotes around the name
         - Quotes around the note are optional
         """

@@ -32,7 +32,7 @@ class TaskInstance(BaseModel):
     done = DateTimeField(null=True)
 
 
-def get_task_list(priority_max_value=100):
+def get_task_list(priority_max_value=util.PRIORITY_LOW):
     subquery = (TaskInstance
                 .select(fn.Max(TaskInstance.due))
                 .where(
