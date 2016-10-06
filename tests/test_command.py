@@ -81,6 +81,20 @@ class FileTests(TestCase):
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
+    def test_listing_with_deleted_items(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        testfile = 'test_list_really_delete'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with Command(args) as interpreter:
+            task = Task.get(name='sharpen pencils')
+            task.priority = util.PRIORITY_INACTIVE
+            task.save()
+            interpreter.do_list(util.PRIORITY_INACTIVE)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
 
 class OutputTests(Redirector):
 
