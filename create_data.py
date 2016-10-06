@@ -30,6 +30,7 @@ pencils = create_task(name='sharpen pencils', note='pencil note', priority=2)
 toenails = create_task(name='clip toenails', note='clip toenails', priority=1)
 wool = create_task(name='gather wool', note=None, priority=1)
 just = create_task(name='just do it', note='bo knows', priority=4)
+goner = create_task(name='goner', note="'tis inactive", priority=9)
 
 def create_instance(task, note, due, done=None):
     return TaskInstance.create(task=task, note=note, due=due, done=done)
@@ -61,6 +62,11 @@ create_instance(
 #     'bo knows 2',
 #     datetime(2016, 10, 8, 5, 5)
 # )
+create_instance(
+    goner,
+    'gone, gone, gone',
+    datetime(2016, 9, 23, 2, 7)
+)
 
 db.close()
 

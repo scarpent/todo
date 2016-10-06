@@ -17,6 +17,7 @@ from models import db
 from models import Task
 from models import TaskInstance
 from models import get_task_list
+from models import get_task_names
 
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
@@ -35,6 +36,7 @@ class Command(cmd.Cmd, object):
             'EOF': self.do_quit,
             'h': self.do_history,
             'l': self.do_list,
+            'll': self.do_list,
             'q': self.do_quit,
         }
 
@@ -112,8 +114,7 @@ class Command(cmd.Cmd, object):
         if tasks:
             sorted_tasks = sorted(
                 tasks,
-                key=util.get_list_sorting_key_value,
-                reverse=True
+                key=util.get_list_sorting_key_value
             )
             self.print_task_list(sorted_tasks)
         else:
@@ -176,9 +177,31 @@ class Command(cmd.Cmd, object):
     def do_delete(self, args):
         """Delete a task
 
+        syntax: delete [task]
+
         Priority will be set to 9 so that it is hidden.
         """
-        pass
+        if not args:
+            return
+
+        print('task: ' + args)
+        try:
+            print('task exists')
+            task = Task.get(name=args)
+            if task.priority == util.PRIORITY_INACTIVE:
+                print('task is already inactive; will delete...')
+                task.delete_instance(recursive=True)
+            else:
+                print('making test inactive...')
+                task.priority = util.PRIORITY_INACTIVE
+                task.save()
+
+        except Task.DoesNotExist:
+            print('task not found')
+
+    def complete_delete(self, text, line, begidx, endidx):
+        tasks = get_task_names()
+        return [i for i in tasks if i.startswith(text)]
 
     def do_history(self, args):
         """Print history of a task"""

@@ -51,3 +51,11 @@ def get_task_list(priority_max_value=util.PRIORITY_LOW):
         tasks.append(task)
 
     return tasks
+
+
+def get_task_names():
+    query = Task.select(Task.name)
+    tasks = []
+    for task in query:
+        tasks.append(task.name)
+    return tasks

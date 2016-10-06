@@ -6,12 +6,12 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 from datetime import datetime
-
+from dateutil.relativedelta import relativedelta
 
 DATE_FORMAT = '%Y-%m-%d'
 DATETIME_FORMAT = DATE_FORMAT + ' %H:%M'
 DATETIME_FORMAT_SECONDS = DATETIME_FORMAT + ':%S'
-SORTING_NO_DATETIME = datetime(1999, 12, 31)
+SORTING_NO_DATETIME = datetime(2999, 12, 31)
 
 PRIORITY_HIGH = 1
 PRIORITY_LOW = 4
@@ -30,11 +30,11 @@ PRIORITY_NUMBER_ERROR = (
 
 def get_list_sorting_key_value(x):
     due = x['due'] if x['due'] else SORTING_NO_DATETIME
-    # invert priority so that reverse sort will put lower numbers at top
-    priority = 9999 - x['priority']
-    return '{date}{priority:04d}'.format(
+    if x['priority'] == PRIORITY_INACTIVE:
+        due = SORTING_NO_DATETIME
+    return '{date}{priority}'.format(
         date=get_date_string(due),
-        priority=priority
+        priority=x['priority']
     )
 
 

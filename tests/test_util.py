@@ -16,8 +16,7 @@ from tests.redirector import Redirector
 class DateTests(TestCase):
 
     def test_get_list_sorting_key_value_no_date(self):
-        expected = util.get_date_string(util.SORTING_NO_DATETIME) \
-                   + '9998'
+        expected = util.get_date_string(util.SORTING_NO_DATETIME) + '1'
         self.assertEqual(
             expected,
             util.get_list_sorting_key_value({
@@ -35,7 +34,7 @@ class DateTests(TestCase):
 
     def test_get_date_for_sorting(self):
         expected = datetime(2016, 10, 4, 11, 17, 45)
-        expected_string = util.get_date_string(expected) + '9995'
+        expected_string = util.get_date_string(expected) + '4'
         d = {'due': expected, 'priority': 4}
         actual = util.get_list_sorting_key_value(d)
         self.assertEqual(expected_string, actual)

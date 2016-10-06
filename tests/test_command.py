@@ -150,7 +150,7 @@ class OutputTests(Redirector):
             'help', 'h',
             'aliases',
             'quit', 'q', 'EOF',
-            'list', 'l',
+            'list', 'l', 'll',
             'add', 'a',
             'edit', 'e',
             'delete',
@@ -170,7 +170,7 @@ class OutputTests(Redirector):
         commands = [
             'help help',
             'help aliases',
-            'help list', 'help l',
+            'help list', 'help l', 'help ll',
             'help quit', 'help q', 'help EOF',
             'help add', 'help a',
             'help edit', 'help e',
