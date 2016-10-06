@@ -11,9 +11,12 @@ import sys
 from unittest import TestCase
 
 import command
+import util
 
 from arghandler import ArgHandler
 from command import Command
+from models import Task
+
 from tests.redirector import Redirector
 from tests.test_models import create_test_data_for_temp_db
 from tests.test_models import create_sort_test_data_for_temp_db
@@ -86,9 +89,47 @@ class OutputTests(Redirector):
         with Command(args) as interpreter:
             interpreter.do_list('abc')
         self.assertEqual(
-            command.NUMBER_ERROR,
+            util.PRIORITY_NUMBER_ERROR,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_add_bad_number(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            interpreter.do_add('blah blah')
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_add_duplicate_task(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah'
+        with Command(args) as interpreter:
+            interpreter.do_add(task_name)
+            self.assertEqual(
+                command.ADDED_TASK + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            interpreter.do_add(task_name)
+            self.assertEqual(
+                command.TASK_ALREADY_EXISTS,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_add_nothing(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            interpreter.do_add('')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
+            interpreter.do_add('   ')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
+            interpreter.do_add('\n')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
 
     def test_syntax_error(self):
         temp_db = init_temp_database()
@@ -105,18 +146,13 @@ class OutputTests(Redirector):
         """ crudely verify basic commands """
         temp_db = init_temp_database()
         commands = [
-            'help',
-            'h',
+            'help', 'h',
             'aliases',
-            'quit',
-            'q',
-            'EOF',
-            'add',
-            'a',
-            'edit',
-            'e',
-            'history',
-            'h'
+            'quit', 'q', 'EOF',
+            'list', 'l',
+            'add', 'a',
+            'edit', 'e',
+            'history', 'h'
         ]
         for c in commands:
             self.reset_redirect()
@@ -132,17 +168,11 @@ class OutputTests(Redirector):
         commands = [
             'help help',
             'help aliases',
-            'help list',
-            'help l',
-            'help quit',
-            'help q',
-            'help EOF',
-            'help add',
-            'help a',
-            'help edit',
-            'help e',
-            'help history',
-            'help h',
+            'help list', 'help l',
+            'help quit', 'help q', 'help EOF',
+            'help add', 'help a',
+            'help edit', 'help e',
+            'help history', 'help h',
         ]
         for c in commands:
             self.reset_redirect()
@@ -161,3 +191,67 @@ class MiscTests(TestCase):
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             self.assertTrue(interpreter.do_quit(None))
+
+
+class DataTests(Redirector):
+
+    def test_add_task_just_name_one_word(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah'
+        with Command(args) as interpreter:
+            interpreter.do_add(task_name)
+            task = Task.get(name=task_name)
+
+        self.assertEqual(1, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_just_name_two_words(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah blah'
+        with Command(args) as interpreter:
+            interpreter.do_add('"{name}"'.format(name=task_name))
+            task = Task.get(name=task_name)
+
+        self.assertEqual(1, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_with_priority(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah'
+        with Command(args) as interpreter:
+            interpreter.do_add(task_name + ' 2')
+
+            task = Task.get(name=task_name)
+
+        self.assertEqual(2, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_with_priority_and_note(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah'
+        task_note = 'this is a note'
+        with Command(args) as interpreter:
+            interpreter.do_add(task_name + ' 2 ' + task_note)
+            task = Task.get(name=task_name)
+
+        self.assertEqual(2, task.priority)
+        self.assertEqual(task_note, task.note)
+
+    def test_add_task_with_priority_and_quoted_note(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'blah'
+        task_note = 'this is a note'
+        with Command(args) as interpreter:
+            interpreter.do_add('{name} 3 "{note}"'.format(
+                name=task_name,
+                note=task_note
+            ))
+            task = Task.get(name=task_name)
+
+        self.assertEqual(3, task.priority)
+        self.assertEqual(task_note, task.note)

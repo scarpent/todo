@@ -13,6 +13,8 @@ DATETIME_FORMAT = DATE_FORMAT + ' %H:%M'
 DATETIME_FORMAT_SECONDS = DATETIME_FORMAT + ':%S'
 SORTING_NO_DATETIME = datetime(1999, 12, 31)
 
+PRIORITY_NUMBER_ERROR = '*** Priority must be an whole number'
+
 
 def get_list_sorting_key_value(x):
     due = x['due'] if x['due'] else SORTING_NO_DATETIME
@@ -31,3 +33,11 @@ def get_datetime_string(d):
 
 def get_datetime(s):
     return datetime.strptime(s, DATETIME_FORMAT_SECONDS) if s else None
+
+def valid_priority_number(number):
+    try:
+        int(number)
+        return True
+    except ValueError:
+        print(PRIORITY_NUMBER_ERROR)
+        return False

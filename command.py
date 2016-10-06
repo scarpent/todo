@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 
 import cmd
 import os
+import shlex
+
+from peewee import IntegrityError
 
 import util
 
@@ -18,7 +21,8 @@ from models import get_task_list
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
-NUMBER_ERROR = '*** priority must be a number'
+TASK_ALREADY_EXISTS = '*** There is already a task with that name'
+ADDED_TASK = 'Added task: '
 
 
 class Command(cmd.Cmd, object):
@@ -71,13 +75,13 @@ class Command(cmd.Cmd, object):
             print(UNKNOWN_SYNTAX + line)
 
     def do_help(self, arg):
-        """get help for a command; syntax: help <COMMAND>"""
+        """Get help for a command; syntax: help <COMMAND>"""
         if arg in self.aliases:
             arg = self.aliases[arg].__name__[3:]
         cmd.Cmd.do_help(self, arg)
 
     def do_aliases(self, arg):
-        """print aliases"""
+        """Print aliases"""
         for alias in sorted(
             self.aliases.keys(),
             key=lambda x: x.lower()
@@ -88,18 +92,17 @@ class Command(cmd.Cmd, object):
             ))
 
     def do_list(self, arg):
-        """ list tasks
+        """List tasks
 
-        optionally specify a priority where only tasks
-        less than or equal to that priority are listed
+        Syntax: list [priority]
+
+        Optionally specify a priority where only tasks
+        less than or equal to that priority are listed.
 
         e.g. "list 2" would list all tasks with priority 1 or 2
         """
         if arg:
-            try:
-                int(arg)
-            except ValueError:
-                print(NUMBER_ERROR)
+            if not util.valid_priority_number(arg):
                 return
         else:
             arg = 100
@@ -137,17 +140,41 @@ class Command(cmd.Cmd, object):
         ))
 
     def do_add(self, args):
-        """ add a new task """
-        pass
+        """Add a new task
+
+        syntax: add name [priority] [note]
+
+        - Default priority = 1
+            (Priority must be specified if note is given)
+        - Spaces in name require quotes around the name
+        - Quotes around the note are optional
+        """
+        args = shlex.split(args)
+
+        if len(args) == 0:
+            return
+        name = args[0]
+
+        priority = 1 if len(args) == 1 else args[1]
+        if not util.valid_priority_number(priority):
+            return
+
+        note = ' '.join(args[2:]) if len(args) > 2 else None
+
+        try:
+            Task.create(name=name, priority=int(priority), note=note)
+            print(ADDED_TASK + name)
+        except IntegrityError:
+            print(TASK_ALREADY_EXISTS)
 
     def do_edit(self, args):
-        """ edit an existing task """
+        """Edit an existing task"""
         pass
 
     def do_history(self, args):
-        """ print history of a task """
+        """Print history of a task"""
         pass
 
     def do_quit(self, arg):
-        """exit the program"""
+        """Exit the program"""
         return True
