@@ -111,7 +111,7 @@ class OutputTests(Redirector):
         with Command(args) as interpreter:
             interpreter.do_add(task_name)
             self.assertEqual(
-                command.ADDED_TASK + task_name,
+                command.TASK_ADDED + task_name,
                 self.redirect.getvalue().rstrip()
             )
             self.reset_redirect()
@@ -185,6 +185,16 @@ class OutputTests(Redirector):
             self.assertFalse(
                 self.redirect.getvalue().startswith(command.NO_HELP)
             )
+
+    def test_delete_nonexistent_task (self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            interpreter.do_delete('blurg')
+        self.assertEqual(
+            command.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
 
 
 class MiscTests(TestCase):
@@ -277,3 +287,31 @@ class DataTests(Redirector):
 
         self.assertEqual(3, task.priority)
         self.assertEqual(task_note, task.note)
+
+    def test_delete_task (self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'gather wool'
+        with Command(args) as interpreter:
+            interpreter.do_delete(task_name)
+            self.assertEqual(
+                command.TASK_DELETED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+            task = Task.get(name=task_name)
+            self.assertEqual(util.PRIORITY_INACTIVE, task.priority)
+
+    def test_delete_task_for_reals (self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'goner'
+        with Command(args) as interpreter:
+            interpreter.do_delete(task_name)
+            self.assertEqual(
+                command.TASK_REALLY_DELETED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+            with self.assertRaises(Task.DoesNotExist):
+                Task.get(name=task_name)

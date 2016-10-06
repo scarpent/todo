@@ -23,7 +23,10 @@ from models import get_task_names
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
-ADDED_TASK = 'Added task: '
+TASK_ADDED = 'Added task: '
+TASK_DELETED = 'Deleted task: '
+TASK_REALLY_DELETED = 'REALLY deleted task: '
+TASK_NOT_FOUND = '*** Task not found'
 
 
 class Command(cmd.Cmd, object):
@@ -142,8 +145,8 @@ class Command(cmd.Cmd, object):
 
         syntax: add name [priority] [note]
 
-        - Default priority = 1
-            (Priority must be specified if note is given)
+        - Priority must be specified if note is given
+        - Default priority if not specified: 1
         - Allowed priority values: 1-4, or 9 (inactive/deleted)
         - Spaces in name require quotes around the name
         - Quotes around the note are optional
@@ -162,7 +165,7 @@ class Command(cmd.Cmd, object):
 
         try:
             Task.create(name=name, priority=int(priority), note=note)
-            print(ADDED_TASK + name)
+            print(TASK_ADDED + name)
         except IntegrityError:
             print(TASK_ALREADY_EXISTS)
 
@@ -170,7 +173,7 @@ class Command(cmd.Cmd, object):
         """Edit an existing task"""
         pass
 
-    def do_delete(self, args):
+    def do_delete(self, name):
         """Delete a task
 
         syntax: delete [task]
@@ -178,23 +181,22 @@ class Command(cmd.Cmd, object):
         - Priority will be set to 9 so that it is hidden and ignored
         - If priority is already 9, it will be deleted forever
         """
-        if not args:
+        if not name:
             return
 
-        print('task: ' + args)
         try:
-            print('task exists')
-            task = Task.get(name=args)
-            if task.priority == util.PRIORITY_INACTIVE:
-                print('task is already inactive; will delete...')
-                task.delete_instance(recursive=True)
-            else:
-                print('making test inactive...')
-                task.priority = util.PRIORITY_INACTIVE
-                task.save()
-
+            task = Task.get(name=name)
         except Task.DoesNotExist:
-            print('task not found')
+            print(TASK_NOT_FOUND)
+            return
+
+        if task.priority == util.PRIORITY_INACTIVE:
+            task.delete_instance(recursive=True)
+            print(TASK_REALLY_DELETED + name)
+        else:
+            task.priority = util.PRIORITY_INACTIVE
+            task.save()
+            print(TASK_DELETED + name)
 
     def complete_delete(self, text, line, begidx, endidx):
         tasks = get_task_names()
