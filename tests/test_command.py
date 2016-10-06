@@ -195,6 +195,25 @@ class MiscTests(TestCase):
         with Command(args) as interpreter:
             self.assertTrue(interpreter.do_quit(None))
 
+    def test_complete_delete(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            tasks = interpreter.complete_delete('g', None, None, None)
+            self.assertEqual(({'gather wool', 'goner'}), set(tasks))
+            tasks = interpreter.complete_delete('', None, None, None)
+            self.assertEqual(
+                ({
+                    'gather wool',
+                    'goner',
+                    'sharpen pencils',
+                    'just do it',
+                    'clip toenails'
+                }),
+                set(tasks)
+            )
+
 
 class DataTests(Redirector):
 
