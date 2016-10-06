@@ -52,6 +52,7 @@ class FileTests(TestCase):
         testfile = 'test_list'
         expected, actual = self.get_expected_and_actual(testfile)
         with Command(args) as interpreter:
+            # default will omit priority 9 (inactive) task "goner"
             interpreter.do_list(None)
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))

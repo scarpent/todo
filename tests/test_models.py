@@ -15,6 +15,8 @@ from peewee import *
 from playhouse.test_utils import test_database
 from playhouse.test_utils import count_queries
 
+import util
+
 from arghandler import ArgHandler
 from command import Command
 from models import Task
@@ -59,6 +61,7 @@ def create_test_data():
     just = Task.create(
         name='just do it', note='bo knows', priority=4
     )
+    Task.create(name='goner', priority=util.PRIORITY_INACTIVE)
     TaskInstance.create(
         task=pencils, note='', due=datetime(2016, 10, 1)
     )
@@ -110,6 +113,7 @@ class ModelTests(TestCase):
                  'name': 'just do it'}
             ]
             with count_queries() as counter:
+                # default omits priority 9 (inactive) task "goner"
                 tasks = get_task_list()
             self.assertEqual(1, counter.count)
             self.assertEqual(expected, tasks)
