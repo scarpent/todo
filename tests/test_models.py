@@ -104,13 +104,13 @@ class ModelTests(TestCase):
                 {'note': 'pencil note', 'priority': 2,
                  'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
                  'name': 'sharpen pencils'},
+                {'note': 'bo knows', 'priority': 4,
+                 'due': datetime(2016, 10, 7, 5, 5), 'id': 4,
+                 'name': 'just do it'},
                 {'note': None, 'priority': 1, 'due': None, 'id': 2,
                  'name': 'clip toenails'},
                 {'note': 'woolly mammoth', 'priority': 1, 'due': None,
                  'id': 3, 'name': 'gather wool'},
-                {'note': 'bo knows', 'priority': 4,
-                 'due': datetime(2016, 10, 7, 5, 5), 'id': 4,
-                 'name': 'just do it'}
             ]
             with count_queries() as counter:
                 # default omits priority 9 (inactive) task "goner"

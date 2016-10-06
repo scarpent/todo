@@ -50,7 +50,12 @@ def get_task_list(priority_max_value=util.PRIORITY_LOW):
         task['due'] = util.get_datetime(row.due)
         tasks.append(task)
 
-    return tasks
+    sorted_tasks = sorted(
+        tasks,
+        key=util.get_list_sorting_key_value
+    )
+
+    return sorted_tasks
 
 
 def get_task_names():

@@ -112,11 +112,7 @@ class Command(cmd.Cmd, object):
 
         tasks = get_task_list(priority_max_value=int(arg))
         if tasks:
-            sorted_tasks = sorted(
-                tasks,
-                key=util.get_list_sorting_key_value
-            )
-            self.print_task_list(sorted_tasks)
+            self.print_task_list(tasks)
         else:
             print('no tasks')
 
