@@ -108,3 +108,19 @@ class OutputTests(Redirector):
             util.PRIORITY_NUMBER_ERROR,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_invalid_priority_number_too_high(self):
+        return_val = util.valid_priority_number(util.PRIORITY_HIGH - 1)
+        self.assertFalse(return_val)
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_invalid_priority_number_too_low(self):
+        return_value = util.valid_priority_number(util.PRIORITY_LOW + 1)
+        self.assertFalse(return_value)
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
