@@ -102,12 +102,14 @@ class Command(cmd.Cmd, object):
 
         Syntax: list [priority]
 
-        Optionally specify a priority where only tasks
-        less than or equal to that priority are listed.
-
-        e.g. "list 2" would list all tasks with priority 1 or 2
+        - Optionally specify a priority where only tasks less than
+          or equal to that priority are listed (e.g. "list 2" will
+          list all tasks with priority 1 or 2)
+        - Priority "all" or "deleted" will show deleted tasks
         """
         if arg:
+            if arg in ['all', 'deleted']:
+                arg = util.PRIORITY_INACTIVE
             if not util.valid_priority_number(arg):
                 return
         else:
@@ -147,7 +149,7 @@ class Command(cmd.Cmd, object):
 
         - Priority must be specified if note is given
         - Default priority if not specified: 1
-        - Allowed priority values: 1-4, or 9 (inactive/deleted)
+        - Allowed priority values: 1-4
         - Spaces in name require quotes around the name
         - Quotes around the note are optional
         """
@@ -176,10 +178,10 @@ class Command(cmd.Cmd, object):
     def do_delete(self, name):
         """Delete a task
 
-        syntax: delete [task]
+        Syntax: delete [task]
 
         - Priority will be set to 9 so that it is hidden and ignored
-        - If priority is already 9, it will be deleted forever
+        - If priority is already 9, it will be deleted FOREVER
         """
         if not name:
             return
