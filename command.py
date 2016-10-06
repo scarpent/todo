@@ -108,7 +108,7 @@ class Command(cmd.Cmd, object):
         else:
             arg = 100
 
-        tasks = get_task_list(priority_less_than=int(arg)+1)
+        tasks = get_task_list(priority_max_value=int(arg))
         if tasks:
             sorted_tasks = sorted(
                 tasks,
