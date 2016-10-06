@@ -173,6 +173,13 @@ class Command(cmd.Cmd, object):
         """Edit an existing task"""
         pass
 
+    def do_delete(self, args):
+        """Delete a task
+
+        Priority will be set to 9 so that it is hidden.
+        """
+        pass
+
     def do_history(self, args):
         """Print history of a task"""
         pass

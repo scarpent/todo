@@ -153,6 +153,7 @@ class OutputTests(Redirector):
             'list', 'l',
             'add', 'a',
             'edit', 'e',
+            'delete',
             'history', 'h'
         ]
         for c in commands:
@@ -173,6 +174,7 @@ class OutputTests(Redirector):
             'help quit', 'help q', 'help EOF',
             'help add', 'help a',
             'help edit', 'help e',
+            'help delete',
             'help history', 'help h',
         ]
         for c in commands:
