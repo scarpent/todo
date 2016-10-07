@@ -61,7 +61,7 @@ def create_test_data():
     just = Task.create(
         name='just do it', note='bo knows', priority=4
     )
-    Task.create(name='goner', priority=util.PRIORITY_DELETED)
+    goner = Task.create(name='goner', priority=util.PRIORITY_DELETED)
     TaskInstance.create(
         task=pencils, note='', due=datetime(2016, 10, 1)
     )
@@ -81,6 +81,10 @@ def create_test_data():
     TaskInstance.create(
         task=just, note='just think about it',
         due=datetime(2016, 10, 7, 5, 5)
+    )
+    TaskInstance.create(
+        task=goner,
+        due=datetime(2016, 8, 1, 2, 3)
     )
 
 

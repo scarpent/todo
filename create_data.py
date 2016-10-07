@@ -62,11 +62,11 @@ create_instance(
 #     'bo knows 2',
 #     datetime(2016, 10, 8, 5, 5)
 # )
-create_instance(
-    goner,
-    'gone, gone, gone',
-    datetime(2016, 9, 23, 2, 7)
+TaskInstance.create(
+    task=goner,
+    due=datetime(2016, 8, 1, 2, 3)
 )
+
 
 db.close()
 
