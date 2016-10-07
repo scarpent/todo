@@ -263,8 +263,11 @@ class Command(cmd.Cmd, object):
 
         Syntax: due <date> task
         """
-        # support things like 0 +1 +1h +30m
+        # support things like 0 (today) 1 (tomorrow) 1h (1 hour) 30m...
         pass
+
+    def complete_due(self, text, line, begidx, endidx):
+        return self.task_name_completer(text)
 
     def do_quit(self, arg):
         """Exit the program"""

@@ -282,6 +282,14 @@ class MiscTests(TestCase):
             instances = interpreter.complete_history('s', '', '', '')
             self.assertEqual(['slay dragon'], instances)
 
+    def test_complete_due(self):
+        temp_db = init_temp_database()
+        create_history_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            instances = interpreter.complete_history('cli', '', '', '')
+            self.assertEqual(['climb mountain'], instances)
+
 
 class DataTests(Redirector):
 
