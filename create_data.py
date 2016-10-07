@@ -37,39 +37,17 @@ def create_instance(task, note, due, done=None):
 
 create_instance(pencils, '', datetime(2016, 10, 1))
 create_instance(pencils, '', datetime(2016, 10, 2))
-create_instance(
-    pencils,
-    'finally',
-    datetime(2016, 10, 2, 15, 31),
-    datetime(2016, 10, 2, 17, 45)
-)
+create_instance(pencils, 'finally', datetime(2016, 10, 2, 15, 31), datetime(2016, 10, 2, 17, 45))
 create_instance(pencils, None, datetime(2016, 10, 3))
 
-create_instance(
-    wool,
-    'yuuuuuge',
-    datetime(2016, 9, 21),
-    datetime(2016, 9, 27)
-)
+create_instance(wool, 'yuuuuuge', datetime(2016, 9, 21), datetime(2016, 9, 27))
+create_instance(wool, 'tracts', datetime(2016, 9, 21), datetime(2016, 8, 15))
+create_instance(wool, 'land', datetime(2016, 9, 21), datetime(2014, 3, 2))
+create_instance(wool, 'open', datetime(2016, 10, 8))
 
-create_instance(
-    just,
-    'just think about it',
-    datetime(2016, 10, 7, 5, 5)
-)
-# create_instance(
-#     just,
-#     'bo knows 2',
-#     datetime(2016, 10, 8, 5, 5)
-# )
-TaskInstance.create(
-    task=goner,
-    due=datetime(2016, 8, 1, 2, 3)
-)
-TaskInstance.create(
-    task=goner,
-    due=datetime(2016, 7, 6, 7, 8)
-)
+create_instance(just, 'just think about it', datetime(2016, 10, 7, 5, 5))
+TaskInstance.create(task=goner, due=datetime(2016, 8, 1, 2, 3))
+TaskInstance.create(task=goner, due=datetime(2016, 7, 6, 7, 8))
 
 
 db.close()

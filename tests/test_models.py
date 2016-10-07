@@ -21,7 +21,9 @@ from arghandler import ArgHandler
 from command import Command
 from models import Task
 from models import TaskInstance
+from models import get_task_instance_list
 from models import get_task_list
+from models import get_task_names
 
 
 test_db = SqliteDatabase(':memory:')
@@ -88,6 +90,35 @@ def create_test_data():
     )
 
 
+def create_history_test_data_for_temp_db():
+    args = ArgHandler.get_args(['--database', TEMP_DB])
+    with Command(args):
+        create_history_test_data()
+
+
+def create_history_test_data():
+    Task.create(name='slay dragon', priority=2)
+    climb = Task.create(name='climb mountain', priority=1)
+    TaskInstance.create(
+        task=climb, note='phew!',
+        due=datetime(2016, 4, 3), done=datetime(2016, 4, 10)
+    )
+    TaskInstance.create(
+        task=climb, note=None,
+        due=datetime(2015, 10, 31), done=datetime(2015, 10, 30)
+    )
+    TaskInstance.create(
+        task=climb,
+        due=datetime(2012, 11, 15), done=datetime(2012, 12, 4)
+    )
+    TaskInstance.create(
+        task=climb, note='was rocky',
+        due=datetime(2014, 7, 15), done=datetime(2014, 8, 3)
+    )
+    TaskInstance.create(
+        task=climb, note='get back to it', due=datetime(2016, 10, 8)
+    )
+
 def create_sort_test_data_for_temp_db():
     create_test_data_for_temp_db()
     args = ArgHandler.get_args(['--database', TEMP_DB])
@@ -150,3 +181,40 @@ class ModelTests(TestCase):
             blah = Task.create(name='blah', priority=1)
             with self.assertRaises(IntegrityError):
                 TaskInstance.create(task=blah)
+
+    def test_get_task_names(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            expected = ({
+                'gather wool',
+                'goner',
+                'sharpen pencils',
+                'just do it',
+                'clip toenails'
+            })
+            self.assertEqual(
+                expected,
+                set(get_task_names())
+            )
+
+    def test_get_task_instance_list(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_history_test_data()
+            expected = [
+                {'note': None, 'done': datetime(2012, 12, 4)},
+                {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
+                {'note': None, 'done': datetime(2015, 10, 30)},
+                {'note': 'phew!', 'done': datetime(2016, 4, 10)},
+            ]
+            self.assertEqual(
+                expected,
+                get_task_instance_list('climb mountain')
+            )
+
+    def test_get_task_instance_list_no_instances(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_history_test_data()
+            self.assertEqual(
+                [],
+                get_task_instance_list('slay dragon')
+            )

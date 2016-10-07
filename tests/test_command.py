@@ -19,8 +19,9 @@ from models import Task
 from models import TaskInstance
 
 from tests.redirector import Redirector
-from tests.test_models import create_test_data_for_temp_db
+from tests.test_models import create_history_test_data_for_temp_db
 from tests.test_models import create_sort_test_data_for_temp_db
+from tests.test_models import create_test_data_for_temp_db
 from tests.test_models import init_temp_database
 
 
@@ -107,6 +108,17 @@ class FileTests(TestCase):
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
 
+    def test_history(self):
+        temp_db = init_temp_database()
+        create_history_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        testfile = 'test_history'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with Command(args) as interpreter:
+            interpreter.do_history('climb mountain')
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
 
 class OutputTests(Redirector):
 
@@ -179,7 +191,7 @@ class OutputTests(Redirector):
             'list', 'l', 'll',
             'add', 'a',
             'edit', 'e',
-            'delete',
+            'delete', 'del',
             'history', 'h'
         ]
         for c in commands:
@@ -188,7 +200,9 @@ class OutputTests(Redirector):
             with Command(args) as interpreter:
                 interpreter.onecmd(c)
             self.assertFalse(
-                self.redirect.getvalue().startswith(command.UNKNOWN_SYNTAX)
+                self.redirect.getvalue().startswith(
+                    command.UNKNOWN_SYNTAX
+                )
             )
 
     def test_simple_help_check(self):
@@ -200,7 +214,7 @@ class OutputTests(Redirector):
             'help quit', 'help q', 'help EOF',
             'help add', 'help a',
             'help edit', 'help e',
-            'help delete',
+            'help delete', 'help del',
             'help history', 'help h',
         ]
         for c in commands:
@@ -212,7 +226,7 @@ class OutputTests(Redirector):
                 self.redirect.getvalue().startswith(command.NO_HELP)
             )
 
-    def test_delete_nonexistent_task (self):
+    def test_delete_nonexistent_task(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
@@ -231,14 +245,14 @@ class MiscTests(TestCase):
         with Command(args) as interpreter:
             self.assertTrue(interpreter.do_quit(None))
 
-    def test_complete_delete(self):
+    def test_task_name_completer(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            tasks = interpreter.complete_delete('g', None, None, None)
+            tasks = interpreter.task_name_completer('g')
             self.assertEqual(({'gather wool', 'goner'}), set(tasks))
-            tasks = interpreter.complete_delete('', None, None, None)
+            tasks = interpreter.task_name_completer('')
             self.assertEqual(
                 ({
                     'gather wool',
@@ -249,6 +263,22 @@ class MiscTests(TestCase):
                 }),
                 set(tasks)
             )
+
+    def test_complete_delete(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            tasks = interpreter.complete_delete('g', None, None, None)
+            self.assertEqual(({'gather wool', 'goner'}), set(tasks))
+
+    def test_complete_history(self):
+        temp_db = init_temp_database()
+        create_history_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            instances = interpreter.complete_history('s', '', '', '')
+            self.assertEqual(['slay dragon'], instances)
 
 
 class DataTests(Redirector):

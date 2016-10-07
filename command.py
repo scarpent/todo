@@ -16,12 +16,15 @@ import util
 from models import db
 from models import Task
 from models import TaskInstance
+from models import get_task_instance_list
 from models import get_task_list
 from models import get_task_names
 
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
+NO_TASKS = 'No tasks'
+NO_HISTORY = 'No history'
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
 TASK_ADDED = 'Added task: '
 TASK_DELETED = 'Deleted task: '
@@ -36,6 +39,7 @@ class Command(cmd.Cmd, object):
         cmd.Cmd.__init__(self)
         self.aliases = {
             'a': self.do_add,
+            'del': self.do_delete,
             'e': self.do_edit,
             'EOF': self.do_quit,
             'h': self.do_history,
@@ -81,7 +85,7 @@ class Command(cmd.Cmd, object):
             print(UNKNOWN_SYNTAX + line)
 
     def do_help(self, arg):
-        """Get help for a command; syntax: help <COMMAND>"""
+        """Get help for a command; Syntax: help <COMMAND>"""
         if arg in self.aliases:
             arg = self.aliases[arg].__name__[3:]
         cmd.Cmd.do_help(self, arg)
@@ -120,7 +124,7 @@ class Command(cmd.Cmd, object):
         if tasks:
             self.print_task_list(tasks)
         else:
-            print('no tasks')
+            print(NO_TASKS)
 
     def print_task_list(self, tasks):
         self.print_task('p', 'due', 'task', 'note')
@@ -146,7 +150,7 @@ class Command(cmd.Cmd, object):
     def do_add(self, args):
         """Add a new task
 
-        syntax: add name [priority] [note]
+        Syntax: add name [priority] [note]
 
         - Priority must be specified if note is given
         - Default priority if not specified: 1
@@ -173,7 +177,7 @@ class Command(cmd.Cmd, object):
             print(TASK_ALREADY_EXISTS)
 
     def do_edit(self, args):
-        """Edit an existing task"""
+        """Edit an existing task (not implemented)"""
         pass
 
     def do_delete(self, name):
@@ -202,12 +206,57 @@ class Command(cmd.Cmd, object):
             print(TASK_DELETED + name)
 
     def complete_delete(self, text, line, begidx, endidx):
+        return self.task_name_completer(text)
+
+    # alias command completion workaround
+    complete_del = complete_delete
+
+    def do_history(self, name):
+        """Show history of a task
+
+        Syntax: history [task]
+        """
+        if not name:
+            return
+
+        try:
+            Task.get(name=name)
+        except Task.DoesNotExist:
+            print(TASK_NOT_FOUND)
+            return
+
+        instances = get_task_instance_list(name)
+        if instances:
+            self.print_task_instances(instances)
+        else:
+            print(NO_HISTORY)
+
+    def complete_history(self, text, line, begidx, endidx):
+        return self.task_name_completer(text)
+
+    # alias command completion workaround
+    complete_h = complete_history
+
+    def task_name_completer(self, text):
         tasks = get_task_names()
         return [i for i in tasks if i.startswith(text)]
 
-    def do_history(self, args):
-        """Print history of a task"""
-        pass
+    def print_task_instances(self, instances, due=None):
+        self.print_task_instance('done', 'note')
+        self.print_task_instance('----', '----')
+        for inst in instances:
+            self.print_task_instance(
+                done=util.get_date_string(inst['done']),
+                note=inst['note']
+            )
+
+    @staticmethod
+    def print_task_instance(done='', note=None):
+        note = '' if not note else note
+        print('{done:10} {note}'.format(
+            done=done,
+            note=note
+        ))
 
     def do_quit(self, arg):
         """Exit the program"""

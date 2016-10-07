@@ -58,6 +58,19 @@ def get_task_list(priority_max_value=util.PRIORITY_LOW):
     return sorted_tasks
 
 
+def get_task_instance_list(task):
+    query = (TaskInstance.select()
+                .join(Task)
+                .where(Task.name == task, TaskInstance.done != None)
+                .order_by(TaskInstance.done))
+
+    instances = []
+    for inst in query:
+        instances.append({'done': inst.done, 'note': inst.note})
+
+    return instances
+
+
 def get_task_names():
     query = Task.select(Task.name)
     tasks = []
