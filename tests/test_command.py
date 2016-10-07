@@ -320,6 +320,8 @@ class DataTests(Redirector):
         args = ArgHandler.get_args(['--database', temp_db])
         task_name = 'gather wool'
         with Command(args) as interpreter:
+            task = Task.get(name=task_name)
+            self.assertNotEqual(util.PRIORITY_DELETED, task.priority)
             interpreter.do_delete(task_name)
             self.assertEqual(
                 command.TASK_DELETED + task_name,
