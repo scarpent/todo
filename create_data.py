@@ -66,6 +66,10 @@ TaskInstance.create(
     task=goner,
     due=datetime(2016, 8, 1, 2, 3)
 )
+TaskInstance.create(
+    task=goner,
+    due=datetime(2016, 7, 6, 7, 8)
+)
 
 
 db.close()
