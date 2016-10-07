@@ -192,7 +192,8 @@ class OutputTests(Redirector):
             'add', 'a',
             'edit', 'e',
             'delete', 'del',
-            'history', 'h'
+            'history', 'h',
+            'due'
         ]
         for c in commands:
             self.reset_redirect()
@@ -216,6 +217,7 @@ class OutputTests(Redirector):
             'help edit', 'help e',
             'help delete', 'help del',
             'help history', 'help h',
+            'help due'
         ]
         for c in commands:
             self.reset_redirect()

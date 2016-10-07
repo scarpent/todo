@@ -258,6 +258,14 @@ class Command(cmd.Cmd, object):
             note=note
         ))
 
+    def do_due(self, args):
+        """Set or update due date of a task (not implemented)
+
+        Syntax: due <date> task
+        """
+        # support things like 0 +1 +1h +30m
+        pass
+
     def do_quit(self, arg):
         """Exit the program"""
         return True
