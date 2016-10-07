@@ -334,20 +334,7 @@ class DataTests(Redirector):
         args = ArgHandler.get_args(['--database', temp_db])
         task_name = 'goner'
         with Command(args) as interpreter:
-            interpreter.do_delete(task_name)
-            self.assertEqual(
-                command.TASK_REALLY_DELETED + task_name,
-                self.redirect.getvalue().rstrip()
-            )
-            with self.assertRaises(Task.DoesNotExist):
-                Task.get(name=task_name)
-
-    def test_delete_task_and_instances(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        task_name = 'goner'
-        with Command(args) as interpreter:
+            # goner has a task instance
             self.assertEqual(
                 1,
                 len(TaskInstance.select().join(Task).where(
@@ -355,16 +342,18 @@ class DataTests(Redirector):
                 ))
             )
             interpreter.do_delete(task_name)
+            # verify the output message
             self.assertEqual(
                 command.TASK_REALLY_DELETED + task_name,
                 self.redirect.getvalue().rstrip()
             )
+            # verify the task is actually gone from the db
             with self.assertRaises(Task.DoesNotExist):
                 Task.get(name=task_name)
+            # verify the instances are gone, too
             self.assertEqual(
                 0,
                 len(TaskInstance.select().join(Task).where(
                     Task.name == task_name
                 ))
             )
-
