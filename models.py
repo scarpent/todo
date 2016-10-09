@@ -26,3 +26,7 @@ class TaskInstance(BaseModel):
     note = CharField(null=True)
     due = DateTimeField()
     done = DateTimeField(null=True)
+
+
+def create_database():
+    db.create_tables([Task, TaskInstance])

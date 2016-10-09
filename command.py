@@ -9,8 +9,8 @@ import cmd
 import os
 
 import views
-from models import Task
-from models import TaskInstance
+
+from models import create_database
 from models import db
 
 
@@ -42,7 +42,7 @@ class Command(cmd.Cmd, object):
             print('creating todo db:\n{db}'.format(
                 db=os.path.abspath(args.database)
             ))
-            db.create_tables([Task, TaskInstance])
+            create_database()
 
         db.connect()
 
