@@ -33,6 +33,7 @@ TASK_NOT_FOUND = '*** Task not found'
 TASK_DELETED_ALIASES = ['all', 'deleted']
 
 
+# noinspection PyUnusedLocal,PyMethodMayBeStatic
 class Command(cmd.Cmd, object):
 
     def __init__(self, args):

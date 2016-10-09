@@ -60,9 +60,9 @@ def get_task_list(priority_max_value=util.PRIORITY_LOW):
 
 def get_task_instance_list(task):
     query = (TaskInstance.select()
-                .join(Task)
-                .where(Task.name == task, TaskInstance.done != None)
-                .order_by(TaskInstance.done))
+             .join(Task)
+             .where(Task.name == task, ~(TaskInstance.done >> None))
+             .order_by(TaskInstance.done))
 
     instances = []
     for inst in query:
