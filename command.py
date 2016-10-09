@@ -12,7 +12,7 @@ import views
 from models import Task
 from models import TaskInstance
 from models import db
-from views import get_task_names
+
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
@@ -128,7 +128,7 @@ class Command(cmd.Cmd, object):
         views.delete_task(args)
 
     def complete_delete(self, text, line, begidx, endidx):
-        return self.task_name_completer(text)
+        return views.get_task_names(starting_with=text)
 
     # alias command completion workaround
     complete_del = complete_delete
@@ -141,14 +141,10 @@ class Command(cmd.Cmd, object):
         views.list_task_instances(args)
 
     def complete_history(self, text, line, begidx, endidx):
-        return self.task_name_completer(text)
+        return views.get_task_names(starting_with=text)
 
     # alias command completion workaround
     complete_h = complete_history
-
-    def task_name_completer(self, text):
-        tasks = get_task_names()
-        return [i for i in tasks if i.startswith(text)]
 
     def do_due(self, args):
         """Set or update due date of a task (not implemented)
@@ -159,7 +155,7 @@ class Command(cmd.Cmd, object):
         pass
 
     def complete_due(self, text, line, begidx, endidx):
-        return self.task_name_completer(text)
+        return views.get_task_names(starting_with=text)
 
     def do_quit(self, arg):
         """Exit the program"""

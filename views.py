@@ -175,8 +175,9 @@ def _get_task_instance_list(task):
     return instances
 
 
-def get_task_names():
-    query = Task.select(Task.name)
+def get_task_names(starting_with=''):
+    query = (Task.select(Task.name)
+             .where(Task.name.startswith(starting_with)))
     tasks = []
     for task in query:
         tasks.append(task.name)

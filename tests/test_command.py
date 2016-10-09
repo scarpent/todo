@@ -146,25 +146,6 @@ class MiscTests(TestCase):
         with Command(args) as interpreter:
             self.assertTrue(interpreter.do_quit(None))
 
-    def test_task_name_completer(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        with Command(args) as interpreter:
-            tasks = interpreter.task_name_completer('g')
-            self.assertEqual(({'gather wool', 'goner'}), set(tasks))
-            tasks = interpreter.task_name_completer('')
-            self.assertEqual(
-                ({
-                    'gather wool',
-                    'goner',
-                    'sharpen pencils',
-                    'just do it',
-                    'clip toenails'
-                }),
-                set(tasks)
-            )
-
     def test_complete_delete(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()

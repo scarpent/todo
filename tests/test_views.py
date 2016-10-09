@@ -62,7 +62,9 @@ class FileTests(TestCase):
             create_test_data()
             testfile = 'test_list_with_deleted'
             for alias in views.TASK_DELETED_ALIASES:
-                expected, actual = self.get_expected_and_actual(testfile)
+                expected, actual = self.get_expected_and_actual(
+                    testfile
+                )
                 views.list_tasks(alias)
                 sys.stdout.close()
                 self.assertTrue(filecmp.cmp(expected, actual))
@@ -204,10 +206,13 @@ class DataTests(Redirector):
                 'just do it',
                 'clip toenails'
             })
+            self.assertEqual(expected, set(views.get_task_names()))
+            self.assertEqual(expected, set(views.get_task_names('')))
             self.assertEqual(
-                expected,
-                set(views.get_task_names())
+                ({'gather wool', 'goner'}),
+                set(views.get_task_names('g'))
             )
+            self.assertEqual([], views.get_task_names('xyz'))
 
     def test_get_task_instance_list(self):
         with test_database(test_db, (Task, TaskInstance)):
