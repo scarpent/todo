@@ -12,8 +12,7 @@ import views
 from models import Task
 from models import TaskInstance
 from models import db
-from models import get_task_names
-
+from views import get_task_names
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '

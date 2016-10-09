@@ -13,6 +13,7 @@ from tests.redirector import Redirector
 from tests.test_models import init_temp_database
 from tests.test_models import create_history_test_data
 
+
 class OutputTests(Redirector):
 
     def test_no_tasks(self):
