@@ -20,10 +20,10 @@ from models import Task
 from models import TaskInstance
 
 from tests.redirector import Redirector
-from tests.test_models import create_history_test_data_for_temp_db
-from tests.test_models import create_sort_test_data_for_temp_db
-from tests.test_models import create_test_data_for_temp_db
-from tests.test_models import init_temp_database
+from tests.data_setup import create_history_test_data_for_temp_db
+from tests.data_setup import create_sort_test_data_for_temp_db
+from tests.data_setup import create_test_data_for_temp_db
+from tests.data_setup import init_temp_database
 
 
 TEST_FILES_DIR = 'tests/files/'

@@ -15,17 +15,17 @@ import views
 
 from models import Task
 from models import TaskInstance
-from tests import test_models
 
-
-test_db = test_models.test_db
+from tests.data_setup import create_history_test_data
+from tests.data_setup import create_test_data
+from tests.data_setup import test_db
 
 
 class DataTests(TestCase):
 
     def test_get_task_list(self):
         with test_database(test_db, (Task, TaskInstance)):
-            test_models.create_test_data()
+            create_test_data()
             expected = [
                 {'note': 'pencil note', 'priority': 2,
                  'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
@@ -46,7 +46,7 @@ class DataTests(TestCase):
 
     def test_get_task_list_with_priority_filter(self):
         with test_database(test_db, (Task, TaskInstance)):
-            test_models.create_test_data()
+            create_test_data()
             expected = [
                 {'note': 'pencil note', 'priority': 2,
                  'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
@@ -61,7 +61,7 @@ class DataTests(TestCase):
 
     def test_get_task_names(self):
         with test_database(test_db, (Task, TaskInstance)):
-            test_models.create_test_data()
+            create_test_data()
             expected = ({
                 'gather wool',
                 'goner',
@@ -76,7 +76,7 @@ class DataTests(TestCase):
 
     def test_get_task_instance_list(self):
         with test_database(test_db, (Task, TaskInstance)):
-            test_models.create_history_test_data()
+            create_history_test_data()
             expected = [
                 {'note': None, 'done': datetime(2012, 12, 4)},
                 {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
@@ -90,7 +90,7 @@ class DataTests(TestCase):
 
     def test_get_task_instance_list_no_instances(self):
         with test_database(test_db, (Task, TaskInstance)):
-            test_models.create_history_test_data()
+            create_history_test_data()
             self.assertEqual(
                 [],
                 views.get_task_instance_list('slay dragon')

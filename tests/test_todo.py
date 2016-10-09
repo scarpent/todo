@@ -5,13 +5,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import command
 import todo
 import views
 
 from tests.redirector import Redirector
-from tests.test_models import init_temp_database
-from tests.test_models import create_history_test_data
+from tests.data_setup import init_temp_database
+from tests.data_setup import create_history_test_data
 
 
 class OutputTests(Redirector):
