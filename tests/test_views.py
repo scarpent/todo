@@ -48,14 +48,18 @@ class FileTests(TestCase):
         sys.stdout = open(actual, 'w')
         return expected, actual
 
+    @staticmethod
+    def compare_files(expected, actual):
+        sys.stdout.close()
+        return filecmp.cmp(expected, actual)
+
     def test_list_tasks(self):
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             testfile = 'test_list'
             expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(None)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
+        self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_with_deleted_items(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -66,8 +70,7 @@ class FileTests(TestCase):
                     testfile
                 )
                 views.list_tasks(alias)
-                sys.stdout.close()
-                self.assertTrue(filecmp.cmp(expected, actual))
+                self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_priority_2(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -75,8 +78,7 @@ class FileTests(TestCase):
             testfile = 'test_list_priority_2'
             expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(2)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
+        self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_sort(self):
         """ higher priority item on same date sorts higher """
@@ -86,8 +88,7 @@ class FileTests(TestCase):
             testfile = 'test_list_sort'
             expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(None)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
+        self.assertTrue(self.compare_files(expected, actual))
 
     def test_sorted_listing_with_deleted_items(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -98,8 +99,7 @@ class FileTests(TestCase):
             task.priority = util.PRIORITY_DELETED
             task.save()
             views.list_tasks(util.PRIORITY_DELETED)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
+        self.assertTrue(self.compare_files(expected, actual))
 
     def test_history(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -107,8 +107,7 @@ class FileTests(TestCase):
             testfile = 'test_history'
             expected, actual = self.get_expected_and_actual(testfile)
             views.list_task_instances('climb mountain')
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
+        self.assertTrue(self.compare_files(expected, actual))
 
 
 class OutputTests(Redirector):
