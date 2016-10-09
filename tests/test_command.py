@@ -12,6 +12,7 @@ from unittest import TestCase
 
 import command
 import util
+import views
 
 from arghandler import ArgHandler
 from command import Command
@@ -234,7 +235,7 @@ class OutputTests(Redirector):
         with Command(args) as interpreter:
             interpreter.do_delete('blurg')
         self.assertEqual(
-            command.TASK_NOT_FOUND,
+            views.TASK_NOT_FOUND,
             self.redirect.getvalue().rstrip()
         )
 

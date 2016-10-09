@@ -12,24 +12,21 @@ import shlex
 from peewee import IntegrityError
 
 import util
+import views
 
-from models import db
 from models import Task
 from models import TaskInstance
-from models import get_task_instance_list
-from models import get_task_list
+from models import db
 from models import get_task_names
+from views import TASK_NOT_FOUND
 
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
-NO_TASKS = 'No tasks'
-NO_HISTORY = 'No history'
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
 TASK_ADDED = 'Added task: '
 TASK_DELETED = 'Deleted task: '
 TASK_REALLY_DELETED = 'REALLY deleted task: '
-TASK_NOT_FOUND = '*** Task not found'
 TASK_DELETED_ALIASES = ['all', 'deleted']
 
 
@@ -103,7 +100,7 @@ class Command(cmd.Cmd, object):
             ))
 
     # todo: option to only list tasks due
-    def do_list(self, arg):
+    def do_list(self, args):
         """List tasks
 
         Syntax: list [priority]
@@ -113,19 +110,7 @@ class Command(cmd.Cmd, object):
           list all tasks with priority 1 or 2)
         - Priority "all" or "deleted" will show deleted tasks
         """
-        if arg:
-            if arg in ['all', 'deleted']:
-                arg = util.PRIORITY_DELETED
-            if not util.valid_priority_number(arg):
-                return
-        else:
-            arg = util.PRIORITY_LOW
-
-        tasks = get_task_list(priority_max_value=int(arg))
-        if tasks:
-            util.print_task_list(tasks)
-        else:
-            print(NO_TASKS)
+        views.list_tasks(args)
 
     def do_add(self, args):
         """Add a new task
@@ -191,25 +176,12 @@ class Command(cmd.Cmd, object):
     # alias command completion workaround
     complete_del = complete_delete
 
-    def do_history(self, name):
+    def do_history(self, args):
         """Show history of a task
 
         Syntax: history [task]
         """
-        if not name:
-            return
-
-        try:
-            Task.get(name=name)
-        except Task.DoesNotExist:
-            print(TASK_NOT_FOUND)
-            return
-
-        instances = get_task_instance_list(name)
-        if instances:
-            util.print_task_instance_list(instances)
-        else:
-            print(NO_HISTORY)
+        views.list_task_instances(args)
 
     def complete_history(self, text, line, begidx, endidx):
         return self.task_name_completer(text)

@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 import command
 import todo
+import views
 
 from tests.redirector import Redirector
 from tests.test_models import init_temp_database
@@ -18,7 +19,7 @@ class OutputTests(Redirector):
         temp_db = init_temp_database()
         todo.main(['-o', 'list', '--database', temp_db])
         self.assertEqual(
-            command.NO_TASKS,
+            views.NO_TASKS,
             self.redirect.getvalue().rstrip()
         )
 
@@ -27,7 +28,7 @@ class OutputTests(Redirector):
         create_history_test_data()
         todo.main(['-o', 'history slay dragon', '--database', temp_db])
         self.assertEqual(
-            command.NO_HISTORY,
+            views.NO_HISTORY,
             self.redirect.getvalue().rstrip()
         )
 
@@ -36,6 +37,6 @@ class OutputTests(Redirector):
         create_history_test_data()
         todo.main(['-o', 'history booger', '--database', temp_db])
         self.assertEqual(
-            command.TASK_NOT_FOUND,
+            views.TASK_NOT_FOUND,
             self.redirect.getvalue().rstrip()
         )
