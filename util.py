@@ -60,3 +60,43 @@ def valid_priority_number(number):
     except ValueError:
         print(PRIORITY_NUMBER_ERROR)
         return False
+
+
+def print_task_list(tasks):
+    print_task('p', 'due', 'task', 'note')
+    print_task('-', '---', '----', '----')
+    for task in tasks:
+        print_task(
+            priority=task['priority'],
+            due=get_date_string(task['due']),
+            name=task['name'],
+            note=task['note']
+        )
+
+
+def print_task(priority='', due='', name='', note=None):
+    note = '' if not note else note
+    print('{priority:1} {due:10} {name:30} {note}'.format(
+        priority=priority,
+        due=due,
+        name=name,
+        note=note
+    ))
+
+
+def print_task_instance_list(instances, due=None):
+    print_task_instance('done', 'note')
+    print_task_instance('----', '----')
+    for inst in instances:
+        print_task_instance(
+            done=get_date_string(inst['done']),
+            note=inst['note']
+        )
+
+
+def print_task_instance(done='', note=None):
+    note = '' if not note else note
+    print('{done:10} {note}'.format(
+        done=done,
+        note=note
+    ))

@@ -122,30 +122,9 @@ class Command(cmd.Cmd, object):
 
         tasks = get_task_list(priority_max_value=int(arg))
         if tasks:
-            self.print_task_list(tasks)
+            util.print_task_list(tasks)
         else:
             print(NO_TASKS)
-
-    def print_task_list(self, tasks):
-        self.print_task('p', 'due', 'task', 'note')
-        self.print_task('-', '---', '----', '----')
-        for task in tasks:
-            self.print_task(
-                priority=task['priority'],
-                due=util.get_date_string(task['due']),
-                name=task['name'],
-                note=task['note']
-            )
-
-    @staticmethod
-    def print_task(priority='', due='', name='', note=None):
-        note = '' if not note else note
-        print('{priority:1} {due:10} {name:30} {note}'.format(
-            priority=priority,
-            due=due,
-            name=name,
-            note=note
-        ))
 
     def do_add(self, args):
         """Add a new task
@@ -227,7 +206,7 @@ class Command(cmd.Cmd, object):
 
         instances = get_task_instance_list(name)
         if instances:
-            self.print_task_instances(instances)
+            util.print_task_instance_list(instances)
         else:
             print(NO_HISTORY)
 
@@ -240,23 +219,6 @@ class Command(cmd.Cmd, object):
     def task_name_completer(self, text):
         tasks = get_task_names()
         return [i for i in tasks if i.startswith(text)]
-
-    def print_task_instances(self, instances, due=None):
-        self.print_task_instance('done', 'note')
-        self.print_task_instance('----', '----')
-        for inst in instances:
-            self.print_task_instance(
-                done=util.get_date_string(inst['done']),
-                note=inst['note']
-            )
-
-    @staticmethod
-    def print_task_instance(done='', note=None):
-        note = '' if not note else note
-        print('{done:10} {note}'.format(
-            done=done,
-            note=note
-        ))
 
     def do_due(self, args):
         """Set or update due date of a task (not implemented)
