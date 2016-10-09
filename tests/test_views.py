@@ -129,10 +129,6 @@ class OutputTests(Redirector):
         with test_database(test_db, (Task, TaskInstance)):
             task_name = 'blah'
             views.add_task(task_name)
-            self.assertEqual(
-                views.TASK_ADDED + task_name,
-                self.redirect.getvalue().rstrip()
-            )
             self.reset_redirect()
             views.add_task(task_name)
             self.assertEqual(

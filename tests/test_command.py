@@ -24,7 +24,7 @@ from tests.redirector import Redirector
 
 class OutputTests(Redirector):
 
-    def test_no_tasks(self):
+    def test_do_list(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
@@ -34,7 +34,7 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
-    def test_no_history(self):
+    def test_do_history(self):
         temp_db = init_temp_database()
         create_history_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
@@ -44,6 +44,41 @@ class OutputTests(Redirector):
             views.NO_HISTORY,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_do_add(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'gargle'
+        with Command(args) as interpreter:
+            interpreter.do_add(task_name)
+            self.assertEqual(
+                views.TASK_ADDED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_delete_task(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'gather wool'
+        with Command(args) as interpreter:
+            Task.create(name=task_name, priority=2)
+            interpreter.do_delete(task_name)
+            self.assertEqual(
+                views.TASK_DELETED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_delete_task_forever(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'farkle'
+        with Command(args) as interpreter:
+            Task.create(name=task_name, priority=util.PRIORITY_DELETED)
+            interpreter.do_delete(task_name)
+            self.assertEqual(
+                views.TASK_REALLY_DELETED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
 
     def test_syntax_error(self):
         temp_db = init_temp_database()
@@ -235,7 +270,7 @@ class DataTests(Redirector):
             task = Task.get(name=task_name)
             self.assertEqual(util.PRIORITY_DELETED, task.priority)
 
-    def test_delete_task_for_reals(self):
+    def test_delete_task_forever(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
@@ -249,11 +284,6 @@ class DataTests(Redirector):
                 ))
             )
             interpreter.do_delete(task_name)
-            # verify the output message
-            self.assertEqual(
-                views.TASK_REALLY_DELETED + task_name,
-                self.redirect.getvalue().rstrip()
-            )
             # verify the task is actually gone from the db
             with self.assertRaises(Task.DoesNotExist):
                 Task.get(name=task_name)
