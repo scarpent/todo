@@ -16,8 +16,7 @@ SORTING_NO_DATETIME = datetime(2999, 12, 31)
 PRIORITY_HIGH = 1
 PRIORITY_LOW = 4
 PRIORITY_DELETED = 9
-ALLOWED_PRIORITIES = range(PRIORITY_HIGH, PRIORITY_LOW + 1) + \
-                     [PRIORITY_DELETED]
+ALLOWED_PRIORITIES = [1, 2, 3, 4, 9]
 PRIORITY_NUMBER_ERROR = (
     '*** Priority must be a whole number between '
     '{high} and {low}, or {deleted}'.format(
