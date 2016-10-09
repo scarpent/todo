@@ -24,6 +24,7 @@ from tests.data_setup import create_history_test_data
 from tests.data_setup import create_test_data
 from tests.data_setup import create_sort_test_data_for_temp_db
 from tests.data_setup import test_db
+from tests.redirector import Redirector
 
 
 TEST_FILES_DIR = 'tests/files/'
@@ -106,6 +107,58 @@ class FileTests(TestCase):
             views.list_task_instances('climb mountain')
         sys.stdout.close()
         self.assertTrue(filecmp.cmp(expected, actual))
+
+
+class OutputTests(Redirector):
+
+    def test_list_bad_number(self):
+        views.list_tasks('abc')
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_add_bad_number(self):
+        views.add_task('blah blah')
+        self.assertEqual(
+            util.PRIORITY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_add_duplicate_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            task_name = 'blah'
+            views.add_task(task_name)
+            self.assertEqual(
+                views.TASK_ADDED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            views.add_task(task_name)
+            self.assertEqual(
+                views.TASK_ALREADY_EXISTS,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_add_nothing(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task('')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
+            self.reset_redirect()
+            views.add_task('   ')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
+            self.reset_redirect()
+            views.add_task('\n')
+            self.assertEqual('', self.redirect.getvalue().rstrip())
+
+    def test_delete_nonexistent_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.delete_task('blurg')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+
 
 class DataTests(TestCase):
 

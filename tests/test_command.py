@@ -16,61 +16,34 @@ from command import Command
 from models import Task
 from models import TaskInstance
 
-from tests.redirector import Redirector
 from tests.data_setup import create_history_test_data_for_temp_db
 from tests.data_setup import create_test_data_for_temp_db
 from tests.data_setup import init_temp_database
+from tests.redirector import Redirector
 
 
 class OutputTests(Redirector):
 
-    def test_list_bad_number(self):
+    def test_no_tasks(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            interpreter.do_list('abc')
+            interpreter.do_list(None)
         self.assertEqual(
-            util.PRIORITY_NUMBER_ERROR,
+            views.NO_TASKS,
             self.redirect.getvalue().rstrip()
         )
 
-    def test_add_bad_number(self):
+    def test_no_history(self):
         temp_db = init_temp_database()
+        create_history_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            interpreter.do_add('blah blah')
+            interpreter.do_history('slay dragon')
         self.assertEqual(
-            util.PRIORITY_NUMBER_ERROR,
+            views.NO_HISTORY,
             self.redirect.getvalue().rstrip()
         )
-
-    def test_add_duplicate_task(self):
-        temp_db = init_temp_database()
-        args = ArgHandler.get_args(['--database', temp_db])
-        task_name = 'blah'
-        with Command(args) as interpreter:
-            interpreter.do_add(task_name)
-            self.assertEqual(
-                views.TASK_ADDED + task_name,
-                self.redirect.getvalue().rstrip()
-            )
-            self.reset_redirect()
-            interpreter.do_add(task_name)
-            self.assertEqual(
-                views.TASK_ALREADY_EXISTS,
-                self.redirect.getvalue().rstrip()
-            )
-
-    def test_add_nothing(self):
-        temp_db = init_temp_database()
-        args = ArgHandler.get_args(['--database', temp_db])
-        with Command(args) as interpreter:
-            interpreter.do_add('')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
-            interpreter.do_add('   ')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
-            interpreter.do_add('\n')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
 
     def test_syntax_error(self):
         temp_db = init_temp_database()
@@ -129,16 +102,6 @@ class OutputTests(Redirector):
             self.assertFalse(
                 self.redirect.getvalue().startswith(command.NO_HELP)
             )
-
-    def test_delete_nonexistent_task(self):
-        temp_db = init_temp_database()
-        args = ArgHandler.get_args(['--database', temp_db])
-        with Command(args) as interpreter:
-            interpreter.do_delete('blurg')
-        self.assertEqual(
-            views.TASK_NOT_FOUND,
-            self.redirect.getvalue().rstrip()
-        )
 
 
 class MiscTests(TestCase):
