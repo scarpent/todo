@@ -63,7 +63,7 @@ class FileTests(TestCase):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
-        for alias in command.TASK_DELETED_ALIASES:
+        for alias in views.TASK_DELETED_ALIASES:
             testfile = 'test_list_with_deleted'
             expected, actual = self.get_expected_and_actual(testfile)
             with Command(args) as interpreter:
@@ -150,13 +150,13 @@ class OutputTests(Redirector):
         with Command(args) as interpreter:
             interpreter.do_add(task_name)
             self.assertEqual(
-                command.TASK_ADDED + task_name,
+                views.TASK_ADDED + task_name,
                 self.redirect.getvalue().rstrip()
             )
             self.reset_redirect()
             interpreter.do_add(task_name)
             self.assertEqual(
-                command.TASK_ALREADY_EXISTS,
+                views.TASK_ALREADY_EXISTS,
                 self.redirect.getvalue().rstrip()
             )
 
@@ -365,7 +365,7 @@ class DataTests(Redirector):
             self.assertNotEqual(util.PRIORITY_DELETED, task.priority)
             interpreter.do_delete(task_name)
             self.assertEqual(
-                command.TASK_DELETED + task_name,
+                views.TASK_DELETED + task_name,
                 self.redirect.getvalue().rstrip()
             )
             task = Task.get(name=task_name)
@@ -387,7 +387,7 @@ class DataTests(Redirector):
             interpreter.do_delete(task_name)
             # verify the output message
             self.assertEqual(
-                command.TASK_REALLY_DELETED + task_name,
+                views.TASK_REALLY_DELETED + task_name,
                 self.redirect.getvalue().rstrip()
             )
             # verify the task is actually gone from the db

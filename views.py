@@ -5,18 +5,63 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import shlex
 
 from models import *
 
 
 NO_HISTORY = 'No history'
 NO_TASKS = 'No tasks'
+TASK_ADDED = 'Added task: '
+TASK_ALREADY_EXISTS = '*** There is already a task with that name'
+TASK_DELETED = 'Deleted task: '
+TASK_DELETED_ALIASES = ['all', 'deleted']
 TASK_NOT_FOUND = '*** Task not found'
+TASK_REALLY_DELETED = 'REALLY deleted task: '
+
+
+def add_task(args):
+    args = shlex.split(args)
+
+    if len(args) == 0:
+        return
+    name = args[0]
+
+    priority = 1 if len(args) == 1 else args[1]
+    if not util.valid_priority_number(priority):
+        return
+
+    note = ' '.join(args[2:]) if len(args) > 2 else None
+
+    try:
+        Task.create(name=name, priority=int(priority), note=note)
+        print(TASK_ADDED + name)
+    except IntegrityError:
+        print(TASK_ALREADY_EXISTS)
+
+
+def delete_task(name):
+    if not name:
+        return
+
+    try:
+        task = Task.get(name=name)
+    except Task.DoesNotExist:
+        print(TASK_NOT_FOUND)
+        return
+
+    if task.priority == util.PRIORITY_DELETED:
+        task.delete_instance(recursive=True)
+        print(TASK_REALLY_DELETED + name)
+    else:
+        task.priority = util.PRIORITY_DELETED
+        task.save()
+        print(TASK_DELETED + name)
 
 
 def list_tasks(args):
     if args:
-        if args in ['all', 'deleted']:
+        if args in TASK_DELETED_ALIASES:
             args = util.PRIORITY_DELETED
         if not util.valid_priority_number(args):
             return

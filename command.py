@@ -7,27 +7,16 @@ from __future__ import unicode_literals
 
 import cmd
 import os
-import shlex
 
-from peewee import IntegrityError
-
-import util
 import views
-
 from models import Task
 from models import TaskInstance
 from models import db
 from models import get_task_names
-from views import TASK_NOT_FOUND
 
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
-TASK_ALREADY_EXISTS = '*** There is already a task with that name'
-TASK_ADDED = 'Added task: '
-TASK_DELETED = 'Deleted task: '
-TASK_REALLY_DELETED = 'REALLY deleted task: '
-TASK_DELETED_ALIASES = ['all', 'deleted']
 
 
 # noinspection PyUnusedLocal,PyMethodMayBeStatic
@@ -123,29 +112,13 @@ class Command(cmd.Cmd, object):
         - Spaces in name require quotes around the name
         - Quotes around the note are optional
         """
-        args = shlex.split(args)
-
-        if len(args) == 0:
-            return
-        name = args[0]
-
-        priority = 1 if len(args) == 1 else args[1]
-        if not util.valid_priority_number(priority):
-            return
-
-        note = ' '.join(args[2:]) if len(args) > 2 else None
-
-        try:
-            Task.create(name=name, priority=int(priority), note=note)
-            print(TASK_ADDED + name)
-        except IntegrityError:
-            print(TASK_ALREADY_EXISTS)
+        views.add_task(args)
 
     def do_edit(self, args):
         """Edit an existing task (not implemented)"""
         pass
 
-    def do_delete(self, name):
+    def do_delete(self, args):
         """Delete a task
 
         Syntax: delete [task]
@@ -153,22 +126,7 @@ class Command(cmd.Cmd, object):
         - Priority will be set to 9 so that it is hidden and ignored
         - If priority is already 9, it will be deleted FOREVER
         """
-        if not name:
-            return
-
-        try:
-            task = Task.get(name=name)
-        except Task.DoesNotExist:
-            print(TASK_NOT_FOUND)
-            return
-
-        if task.priority == util.PRIORITY_DELETED:
-            task.delete_instance(recursive=True)
-            print(TASK_REALLY_DELETED + name)
-        else:
-            task.priority = util.PRIORITY_DELETED
-            task.save()
-            print(TASK_DELETED + name)
+        views.delete_task(args)
 
     def complete_delete(self, text, line, begidx, endidx):
         return self.task_name_completer(text)
