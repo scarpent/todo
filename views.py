@@ -72,7 +72,7 @@ def list_tasks(args):
     else:
         args = util.PRIORITY_LOW
 
-    tasks = get_task_list(priority_max_value=int(args))
+    tasks = _get_task_list(priority_max_value=int(args))
     if tasks:
         _print_task_list(tasks)
     else:
@@ -89,7 +89,7 @@ def list_task_instances(name):
         print(TASK_NOT_FOUND)
         return
 
-    instances = get_task_instance_list(name)
+    instances = _get_task_instance_list(name)
     if instances:
         _print_task_instance_list(instances)
     else:
@@ -136,7 +136,7 @@ def _print_task_instance(done='', note=None):
     ))
 
 
-def get_task_list(priority_max_value=util.PRIORITY_LOW):
+def _get_task_list(priority_max_value=util.PRIORITY_LOW):
     subquery = (TaskInstance
                 .select(fn.Max(TaskInstance.due))
                 .where(
@@ -162,7 +162,7 @@ def get_task_list(priority_max_value=util.PRIORITY_LOW):
     return sorted_tasks
 
 
-def get_task_instance_list(task):
+def _get_task_instance_list(task):
     query = (TaskInstance.select()
              .join(Task)
              .where(Task.name == task, ~(TaskInstance.done >> None))

@@ -40,7 +40,7 @@ class DataTests(TestCase):
             ]
             with count_queries() as counter:
                 # default omits priority 9 (deleted) task "goner"
-                tasks = views.get_task_list()
+                tasks = views._get_task_list()
             self.assertEqual(1, counter.count)
             self.assertEqual(expected, tasks)
 
@@ -56,7 +56,7 @@ class DataTests(TestCase):
                 {'note': 'woolly mammoth', 'priority': 1, 'due': None,
                  'id': 3, 'name': 'gather wool'},
             ]
-            tasks = views.get_task_list(3)
+            tasks = views._get_task_list(3)
             self.assertEqual(expected, tasks)
 
     def test_get_task_names(self):
@@ -85,7 +85,7 @@ class DataTests(TestCase):
             ]
             self.assertEqual(
                 expected,
-                views.get_task_instance_list('climb mountain')
+                views._get_task_instance_list('climb mountain')
             )
 
     def test_get_task_instance_list_no_instances(self):
@@ -93,5 +93,5 @@ class DataTests(TestCase):
             create_history_test_data()
             self.assertEqual(
                 [],
-                views.get_task_instance_list('slay dragon')
+                views._get_task_instance_list('slay dragon')
             )
