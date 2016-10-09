@@ -5,12 +5,16 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import filecmp
+import sys
+
 from datetime import datetime
 from unittest import TestCase
 
 from playhouse.test_utils import test_database
 from playhouse.test_utils import count_queries
 
+import util
 import views
 
 from models import Task
@@ -18,8 +22,90 @@ from models import TaskInstance
 
 from tests.data_setup import create_history_test_data
 from tests.data_setup import create_test_data
+from tests.data_setup import create_sort_test_data_for_temp_db
 from tests.data_setup import test_db
 
+
+TEST_FILES_DIR = 'tests/files/'
+OUT_SUFFIX = '.out'
+EXPECTED_SUFFIX = OUT_SUFFIX + '_expected'
+
+
+class FileTests(TestCase):
+
+    def setUp(self):
+        self.savestdout = sys.stdout
+
+    def tearDown(self):
+        sys.stdout = self.savestdout
+
+    @staticmethod
+    def get_expected_and_actual(testfile):
+        testfile = TEST_FILES_DIR + testfile
+        expected = testfile + EXPECTED_SUFFIX
+        actual = testfile + OUT_SUFFIX
+        sys.stdout = open(actual, 'w')
+        return expected, actual
+
+    def test_list_tasks(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            testfile = 'test_list'
+            expected, actual = self.get_expected_and_actual(testfile)
+            views.list_tasks(None)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_list_with_deleted_items(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            testfile = 'test_list_with_deleted'
+            for alias in views.TASK_DELETED_ALIASES:
+                expected, actual = self.get_expected_and_actual(testfile)
+                views.list_tasks(alias)
+                sys.stdout.close()
+                self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_list_priority_2(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            testfile = 'test_list_priority_2'
+            expected, actual = self.get_expected_and_actual(testfile)
+            views.list_tasks(2)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_list_sort(self):
+        """ higher priority item on same date sorts higher """
+        # (even if time of day is later for the lower priority item)
+        with test_database(test_db, (Task, TaskInstance)):
+            create_sort_test_data_for_temp_db()
+            testfile = 'test_list_sort'
+            expected, actual = self.get_expected_and_actual(testfile)
+            views.list_tasks(None)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_sorted_listing_with_deleted_items(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            testfile = 'test_list_sorted_with_deletes'
+            expected, actual = self.get_expected_and_actual(testfile)
+            task = Task.get(name='sharpen pencils')
+            task.priority = util.PRIORITY_DELETED
+            task.save()
+            views.list_tasks(util.PRIORITY_DELETED)
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
+
+    def test_history(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            create_history_test_data()
+            testfile = 'test_history'
+            expected, actual = self.get_expected_and_actual(testfile)
+            views.list_task_instances('climb mountain')
+        sys.stdout.close()
+        self.assertTrue(filecmp.cmp(expected, actual))
 
 class DataTests(TestCase):
 

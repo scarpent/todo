@@ -5,9 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-import filecmp
-import sys
-
 from unittest import TestCase
 
 import command
@@ -21,104 +18,8 @@ from models import TaskInstance
 
 from tests.redirector import Redirector
 from tests.data_setup import create_history_test_data_for_temp_db
-from tests.data_setup import create_sort_test_data_for_temp_db
 from tests.data_setup import create_test_data_for_temp_db
 from tests.data_setup import init_temp_database
-
-
-TEST_FILES_DIR = 'tests/files/'
-OUT_SUFFIX = '.out'
-EXPECTED_SUFFIX = OUT_SUFFIX + '_expected'
-
-
-class FileTests(TestCase):
-
-    def setUp(self):
-        self.savestdout = sys.stdout
-
-    def tearDown(self):
-        sys.stdout = self.savestdout
-
-    @staticmethod
-    def get_expected_and_actual(testfile):
-        testfile = TEST_FILES_DIR + testfile
-        expected = testfile + EXPECTED_SUFFIX
-        actual = testfile + OUT_SUFFIX
-        sys.stdout = open(actual, 'w')
-        return expected, actual
-
-    def test_list(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_list'
-        expected, actual = self.get_expected_and_actual(testfile)
-        with Command(args) as interpreter:
-            # default will omit priority 9 (deleted) task "goner"
-            interpreter.do_list(None)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
-
-    def test_list_with_deleted_items(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        for alias in views.TASK_DELETED_ALIASES:
-            testfile = 'test_list_with_deleted'
-            expected, actual = self.get_expected_and_actual(testfile)
-            with Command(args) as interpreter:
-                interpreter.do_list(alias)
-            sys.stdout.close()
-            self.assertTrue(filecmp.cmp(expected, actual))
-
-    def test_list_priority_2(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_list_priority_2'
-        expected, actual = self.get_expected_and_actual(testfile)
-        with Command(args) as interpreter:
-            interpreter.do_list(2)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
-
-    def test_list_sort(self):
-        """ higher priority item on same date sorts higher """
-        # (even if time of day is later for the lower priority item)
-        temp_db = init_temp_database()
-        create_sort_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_list_sort'
-        expected, actual = self.get_expected_and_actual(testfile)
-        with Command(args) as interpreter:
-            interpreter.do_list(None)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
-
-    def test_sorted_listing_with_deleted_items(self):
-        temp_db = init_temp_database()
-        create_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_list_sorted_with_deletes'
-        expected, actual = self.get_expected_and_actual(testfile)
-        with Command(args) as interpreter:
-            task = Task.get(name='sharpen pencils')
-            task.priority = util.PRIORITY_DELETED
-            task.save()
-            interpreter.do_list(util.PRIORITY_DELETED)
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
-
-    def test_history(self):
-        temp_db = init_temp_database()
-        create_history_test_data_for_temp_db()
-        args = ArgHandler.get_args(['--database', temp_db])
-        testfile = 'test_history'
-        expected, actual = self.get_expected_and_actual(testfile)
-        with Command(args) as interpreter:
-            interpreter.do_history('climb mountain')
-        sys.stdout.close()
-        self.assertTrue(filecmp.cmp(expected, actual))
 
 
 class OutputTests(Redirector):
