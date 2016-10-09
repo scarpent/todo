@@ -156,7 +156,7 @@ class OutputTests(Redirector):
         )
 
 
-class DataTests(TestCase):
+class DataTests(Redirector):
 
     def test_get_task_list(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -229,4 +229,86 @@ class DataTests(TestCase):
             self.assertEqual(
                 [],
                 views._get_task_instance_list('slay dragon')
+            )
+
+    def test_add_task_just_name_one_word(self):
+        task_name = 'blah'
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task(task_name)
+            task = Task.get(name=task_name)
+        self.assertEqual(1, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_just_name_two_words(self):
+        task_name = 'blah blah'
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task('"{name}"'.format(name=task_name))
+            task = Task.get(name=task_name)
+        self.assertEqual(1, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_with_priority(self):
+        task_name = 'blah'
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task(task_name + ' 2')
+            task = Task.get(name=task_name)
+        self.assertEqual(2, task.priority)
+        self.assertEqual(None, task.note)
+
+    def test_add_task_with_priority_and_note(self):
+        task_name = 'blah'
+        task_note = 'this is a note'
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task(task_name + ' 2 ' + task_note)
+            task = Task.get(name=task_name)
+        self.assertEqual(2, task.priority)
+        self.assertEqual(task_note, task.note)
+
+    def test_add_task_with_priority_and_quoted_note(self):
+        task_name = 'blah'
+        task_note = 'this is a note'
+        with test_database(test_db, (Task, TaskInstance)):
+            views.add_task('{name} 3 "{note}"'.format(
+                name=task_name,
+                note=task_note
+            ))
+            task = Task.get(name=task_name)
+        self.assertEqual(3, task.priority)
+        self.assertEqual(task_note, task.note)
+
+    def test_delete_task(self):
+        task_name = 'gather wool'
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            task = Task.get(name=task_name)
+            self.assertNotEqual(util.PRIORITY_DELETED, task.priority)
+            views.delete_task(task_name)
+            self.assertEqual(
+                views.TASK_DELETED + task_name,
+                self.redirect.getvalue().rstrip()
+            )
+            task = Task.get(name=task_name)
+            self.assertEqual(util.PRIORITY_DELETED, task.priority)
+
+    def test_delete_task_forever(self):
+        task_name = 'goner'
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            # goner has a task instance
+            self.assertEqual(
+                1,
+                len(TaskInstance.select().join(Task).where(
+                    Task.name == task_name
+                ))
+            )
+            views.delete_task(task_name)
+            # verify the task is actually gone from the db
+            with self.assertRaises(Task.DoesNotExist):
+                Task.get(name=task_name)
+            # verify the instances are gone, too
+            self.assertEqual(
+                0,
+                len(TaskInstance.select().join(Task).where(
+                    Task.name == task_name
+                ))
             )
