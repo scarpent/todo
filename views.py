@@ -14,6 +14,7 @@ import util
 from models import *
 from models import TaskInstance, Task
 
+
 NO_HISTORY = 'No history'
 NO_TASKS = 'No tasks'
 TASK_ADDED = 'Added task: '

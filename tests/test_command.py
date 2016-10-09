@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
+
 from unittest import TestCase
 
 import command
@@ -22,6 +24,20 @@ from tests.redirector import Redirector
 
 
 class OutputTests(Redirector):
+
+    def test_db_created(self):
+        temp_db = 'tests/files/temp.sqlite'
+        if os.path.exists(temp_db):
+            os.remove(temp_db)
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args):
+            pass
+        self.assertEqual(
+            command.CREATING_DB.format(
+                db=os.path.abspath(temp_db)
+            ),
+            self.redirect.getvalue().rstrip()
+        )
 
     def test_do_list(self):
         temp_db = init_temp_database()

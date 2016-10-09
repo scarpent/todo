@@ -16,6 +16,7 @@ from models import db
 
 UNKNOWN_SYNTAX = '*** Unknown syntax: '
 NO_HELP = '*** No help on '
+CREATING_DB = 'Creating todo db:\n{db}'
 
 
 # noinspection PyUnusedLocal,PyMethodMayBeStatic
@@ -39,7 +40,7 @@ class Command(cmd.Cmd, object):
 
         db.init(args.database)
         if not os.path.exists(args.database):
-            print('creating todo db:\n{db}'.format(
+            print(CREATING_DB.format(
                 db=os.path.abspath(args.database)
             ))
             create_database()
