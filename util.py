@@ -11,8 +11,7 @@ from datetime import datetime
 
 
 DATE_FORMAT = '%Y-%m-%d'
-DATETIME_FORMAT = DATE_FORMAT + ' %H:%M'
-DATETIME_FORMAT_SECONDS = DATETIME_FORMAT + ':%S'
+DATETIME_FORMAT = DATE_FORMAT + ' %H:%M:%S'
 SORTING_NO_DATETIME = datetime(2999, 12, 31)
 
 PRIORITY_HIGH = 1
@@ -27,6 +26,7 @@ PRIORITY_NUMBER_ERROR = (
         deleted=PRIORITY_DELETED
     )
 )
+DUE_DATE_ERROR = '*** Invalid due date'
 
 
 def get_list_sorting_key_value(x):
@@ -48,7 +48,11 @@ def get_datetime_string(d):
 
 
 def get_datetime(s):
-    return datetime.strptime(s, DATETIME_FORMAT_SECONDS) if s else None
+    return datetime.strptime(s, DATETIME_FORMAT) if s else None
+
+
+def get_datetime_from_date_only_string(s):
+    return datetime.strptime(s, DATE_FORMAT) if s else None
 
 
 def valid_priority_number(number):
@@ -63,5 +67,18 @@ def valid_priority_number(number):
         return False
 
 
-def calc_due_date(due):
-    pass
+def get_due_date(due, start_date):
+    due = due.strip().lower()
+    if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due):
+        return get_datetime_from_date_only_string(due)
+
+    # valid_patterns = [
+    #     r'^\d\d\d\d-\d\d-\d\d$',
+    #     r'^\d+\s*(minute|h(ours?)?|d(ays?)?',
+    #     r'^\d+\s*(w(eeks?)?|m(onths?)?|y(ears?)?'
+    # ]
+    # for pattern in valid_patterns:
+    #     if re.search(pattern, due.strip().lower()):
+    #         return True
+    # print(DUE_DATE_ERROR)
+    # return False

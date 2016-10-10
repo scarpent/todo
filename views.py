@@ -73,11 +73,11 @@ def set_due_date(args):
 
     if len(args) < 2:
         return
-    name = ' '.join(args[:-1])
+    task_name = ' '.join(args[:-1])
     due = args[-1]
 
     try:
-        task = Task.get(name=name)
+        task = Task.get(name=task_name)
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
         return
@@ -87,7 +87,7 @@ def set_due_date(args):
         task.priority = 1
         task.save()
 
-    # get task instance...
+    open_task_instance = _get_open_task_instance(task_name)
 
     # print('task: ' + task.name)
     print(TASK_DUE_DATE_SET + due)

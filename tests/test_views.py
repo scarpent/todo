@@ -383,6 +383,7 @@ class DataTests(Redirector):
         )
         self.assertIsNone(inst.done)
         self.assertTrue(inst.is_dirty())
+        self.verify_open_instance_count(task_name, 0)
 
     def test_get_open_task_instance_existing_open_instance(self):
         task_name = 'blech'

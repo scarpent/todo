@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import date
 from datetime import datetime
 from unittest import TestCase
 
@@ -54,12 +55,8 @@ class DateTests(TestCase):
 
     def test_get_datetime_string(self):
         self.assertEqual(
-            '2016-09-04 07:08',
+            '2016-09-04 07:08:09',
             util.get_datetime_string(datetime(2016, 9, 4, 7, 8, 9))
-        )
-        self.assertEqual(
-            '2016-09-04 14:08',
-            util.get_datetime_string(datetime(2016, 9, 4, 14, 8, 9))
         )
 
     def test_get_datetime_no_date(self):
@@ -72,6 +69,24 @@ class DateTests(TestCase):
             datetime(2016, 9, 4, 5, 8, 0),
             util.get_datetime('2016-09-04 05:08:00')
         )
+        self.assertEqual(
+            datetime(2016, 9, 4, 5, 8, 0),
+            util.get_datetime('2016-9-4 05:08:00')
+        )
+        with self.assertRaises(ValueError):
+            util.get_datetime('2016-13-04 05:08:00')
+
+    def test_get_datetime_from_date_only(self):
+        self.assertEqual(
+            datetime(2016, 9, 4),
+            util.get_datetime_from_date_only_string('2016-09-04')
+        )
+        self.assertEqual(
+            datetime(2016, 9, 4),
+            util.get_datetime_from_date_only_string('2016-9-4')
+        )
+        with self.assertRaises(ValueError):
+            util.get_datetime('2016-14-36')
 
 
 class OutputTests(Redirector):
@@ -125,10 +140,29 @@ class OutputTests(Redirector):
         )
 
 
-class CalcDueDateTests(TestCase):
+class DueDateTests(TestCase):
+
+    def test_date(self):
+        self.assertEqual(
+            datetime(1997, 6, 1, 0),
+            util.get_due_date('1997-06-01', datetime.today())
+        )
+        self.assertEqual(
+            datetime(1997, 6, 1, 0, 0),
+            util.get_due_date('   1997-06-01   ', datetime.today())
+        )
+        self.assertEqual(
+            datetime(1997, 6, 1),
+            util.get_due_date('1997-6-1', datetime.today())
+        )
+        with self.assertRaises(ValueError):
+            util.get_due_date('2016-14-36', datetime.today())
 
     def test_days(self):
         pass
 
     def test_zero(self):
+        pass
+
+    def test_less_than_zero(self):
         pass
