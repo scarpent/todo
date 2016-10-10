@@ -54,17 +54,17 @@ class FileTests(TestCase):
         return filecmp.cmp(expected, actual)
 
     def test_list_tasks(self):
+        testfile = 'test_list'
+        expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            testfile = 'test_list'
-            expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(None)
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_with_deleted_items(self):
+        testfile = 'test_list_with_deleted'
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            testfile = 'test_list_with_deleted'
             for alias in views.TASK_DELETED_ALIASES:
                 expected, actual = self.get_expected_and_actual(
                     testfile
@@ -73,28 +73,28 @@ class FileTests(TestCase):
                 self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_priority_2(self):
+        testfile = 'test_list_priority_2'
+        expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            testfile = 'test_list_priority_2'
-            expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(2)
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_sort(self):
         """ higher priority item on same date sorts higher """
         # (even if time of day is later for the lower priority item)
+        testfile = 'test_list_sort'
+        expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_sort_test_data_for_temp_db()
-            testfile = 'test_list_sort'
-            expected, actual = self.get_expected_and_actual(testfile)
             views.list_tasks(None)
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_sorted_listing_with_deleted_items(self):
+        testfile = 'test_list_sorted_with_deletes'
+        expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            testfile = 'test_list_sorted_with_deletes'
-            expected, actual = self.get_expected_and_actual(testfile)
             task = Task.get(name='sharpen pencils')
             task.priority = util.PRIORITY_DELETED
             task.save()
@@ -102,10 +102,10 @@ class FileTests(TestCase):
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_history(self):
+        testfile = 'test_history'
+        expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
-            testfile = 'test_history'
-            expected, actual = self.get_expected_and_actual(testfile)
             views.list_task_instances('climb mountain')
         self.assertTrue(self.compare_files(expected, actual))
 
@@ -127,8 +127,8 @@ class OutputTests(Redirector):
         )
 
     def test_add_duplicate_task(self):
+        task_name = 'blah'
         with test_database(test_db, (Task, TaskInstance)):
-            task_name = 'blah'
             views.add_task(task_name)
             self.reset_redirect()
             views.add_task(task_name)
@@ -160,51 +160,49 @@ class OutputTests(Redirector):
 class DataTests(Redirector):
 
     def test_get_task_list(self):
+        expected = [
+            {'note': 'pencil note', 'priority': 2,
+             'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
+             'name': 'sharpen pencils'},
+            {'note': 'bo knows', 'priority': 4,
+             'due': datetime(2016, 10, 7, 5, 5), 'id': 4,
+             'name': 'just do it'},
+            {'note': None, 'priority': 1, 'due': None, 'id': 2,
+             'name': 'clip toenails'},
+            {'note': 'woolly mammoth', 'priority': 1, 'due': None,
+             'id': 3, 'name': 'gather wool'},
+        ]
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            expected = [
-                {'note': 'pencil note', 'priority': 2,
-                 'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
-                 'name': 'sharpen pencils'},
-                {'note': 'bo knows', 'priority': 4,
-                 'due': datetime(2016, 10, 7, 5, 5), 'id': 4,
-                 'name': 'just do it'},
-                {'note': None, 'priority': 1, 'due': None, 'id': 2,
-                 'name': 'clip toenails'},
-                {'note': 'woolly mammoth', 'priority': 1, 'due': None,
-                 'id': 3, 'name': 'gather wool'},
-            ]
             with count_queries() as counter:
                 # default omits priority 9 (deleted) task "goner"
-                tasks = views._get_task_list()
-            self.assertEqual(1, counter.count)
-            self.assertEqual(expected, tasks)
+                self.assertEqual(expected, views._get_task_list())
+        self.assertEqual(1, counter.count)
 
     def test_get_task_list_with_priority_filter(self):
+        expected = [
+            {'note': 'pencil note', 'priority': 2,
+             'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
+             'name': 'sharpen pencils'},
+            {'note': None, 'priority': 1, 'due': None, 'id': 2,
+             'name': 'clip toenails'},
+            {'note': 'woolly mammoth', 'priority': 1, 'due': None,
+             'id': 3, 'name': 'gather wool'},
+        ]
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            expected = [
-                {'note': 'pencil note', 'priority': 2,
-                 'due': datetime(2016, 10, 3, 0, 0), 'id': 1,
-                 'name': 'sharpen pencils'},
-                {'note': None, 'priority': 1, 'due': None, 'id': 2,
-                 'name': 'clip toenails'},
-                {'note': 'woolly mammoth', 'priority': 1, 'due': None,
-                 'id': 3, 'name': 'gather wool'},
-            ]
-            tasks = views._get_task_list(3)
-            self.assertEqual(expected, tasks)
+            self.assertEqual(expected, views._get_task_list(3))
 
     def test_get_task_names(self):
+        expected = ({
+            'gather wool',
+            'goner',
+            'sharpen pencils',
+            'just do it',
+            'clip toenails'
+        })
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            expected = ({
-                'gather wool',
-                'goner',
-                'sharpen pencils',
-                'just do it',
-                'clip toenails'
-            })
             self.assertEqual(expected, set(views.get_task_names()))
             self.assertEqual(expected, set(views.get_task_names('')))
             self.assertEqual(
@@ -214,14 +212,14 @@ class DataTests(Redirector):
             self.assertEqual([], views.get_task_names('xyz'))
 
     def test_get_task_instance_list(self):
+        expected = [
+            {'note': None, 'done': datetime(2012, 12, 4)},
+            {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
+            {'note': None, 'done': datetime(2015, 10, 30)},
+            {'note': 'phew!', 'done': datetime(2016, 4, 10)},
+        ]
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
-            expected = [
-                {'note': None, 'done': datetime(2012, 12, 4)},
-                {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
-                {'note': None, 'done': datetime(2015, 10, 30)},
-                {'note': 'phew!', 'done': datetime(2016, 4, 10)},
-            ]
             self.assertEqual(
                 expected,
                 views._get_task_instance_list('climb mountain')
