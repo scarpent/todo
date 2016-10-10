@@ -7,6 +7,9 @@ from __future__ import unicode_literals
 
 import shlex
 
+from datetime import date
+from datetime import datetime
+
 from playhouse.shortcuts import model_to_dict
 
 import util
@@ -23,6 +26,7 @@ TASK_DELETED = 'Deleted task: '
 TASK_DELETED_ALIASES = ['all', 'deleted']
 TASK_NOT_FOUND = '*** Task not found'
 TASK_REALLY_DELETED = 'REALLY deleted task: '
+TASK_DUE_DATE_SET = 'Due date set: '
 
 
 def add_task(args):
@@ -64,6 +68,31 @@ def delete_task(name):
         print(TASK_DELETED + name)
 
 
+def set_due_date(args):
+    args = shlex.split(args)
+
+    if len(args) < 2:
+        return
+    name = ' '.join(args[:-1])
+    due = args[-1]
+
+    try:
+        task = Task.get(name=name)
+    except Task.DoesNotExist:
+        print(TASK_NOT_FOUND)
+        return
+
+    if task.priority == util.PRIORITY_DELETED:
+        print('This task was deleted. Bringing it back to life...')
+        task.priority = 1
+        task.save()
+
+    # get task instance...
+
+    # print('task: ' + task.name)
+    print(TASK_DUE_DATE_SET + due)
+
+
 def list_tasks(args):
     if args:
         if args in TASK_DELETED_ALIASES:
@@ -80,14 +109,17 @@ def list_tasks(args):
         print(NO_TASKS)
 
 
-def list_task_instances(name):
-    if not name:
-        return
-
+def _task_exists(name):
     try:
         Task.get(name=name)
+        return True
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
+        return False
+
+
+def list_task_instances(name):
+    if not name or not _task_exists(name):
         return
 
     instances = _get_task_instance_list(name)
@@ -163,10 +195,13 @@ def _get_task_list(priority_max_value=util.PRIORITY_LOW):
     return sorted_tasks
 
 
-def _get_task_instance_list(task):
+def _get_task_instance_list(task_name):
     query = (TaskInstance.select()
              .join(Task)
-             .where(Task.name == task, ~(TaskInstance.done >> None))
+             .where(
+                Task.name == task_name,
+                ~(TaskInstance.done >> None)
+              )
              .order_by(TaskInstance.done))
 
     instances = []
@@ -174,6 +209,25 @@ def _get_task_instance_list(task):
         instances.append({'done': inst.done, 'note': inst.note})
 
     return instances
+
+
+def _get_open_task_instance(task_name):
+    query = (TaskInstance.select()
+             .join(Task)
+             .where(Task.name == task_name, TaskInstance.done >> None)
+             .order_by(TaskInstance.due.desc()))
+
+    if not query:
+        return TaskInstance(
+            task=Task.get(Task.name == task_name),
+            due=datetime.combine(date.today(), datetime.min.time())
+        )
+
+    # delete orphaned open task instances
+    for inst in query[1:]:
+        inst.delete_instance()
+
+    return query[0]
 
 
 def get_task_names(starting_with=''):

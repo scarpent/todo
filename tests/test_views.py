@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import filecmp
 import sys
 
+from datetime import date
 from datetime import datetime
 from unittest import TestCase
 
@@ -126,6 +127,12 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
+    def test_set_due_date_not_enough_args(self):
+        views.set_due_date('blurg')
+        self.assertEqual('', self.redirect.getvalue().rstrip())
+        views.set_due_date('"blurg blurg"')
+        self.assertEqual('', self.redirect.getvalue().rstrip())
+
     def test_add_duplicate_task(self):
         task_name = 'blah'
         with test_database(test_db, (Task, TaskInstance)):
@@ -151,6 +158,26 @@ class OutputTests(Redirector):
     def test_delete_nonexistent_task(self):
         with test_database(test_db, (Task, TaskInstance)):
             views.delete_task('blurg')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_set_due_date_on_nonexistent_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.set_due_date('blurg 1')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_set_due_date_on_task_no_due_date_given(self):
+        task_name = 'two words'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=3)
+            views.set_due_date(task_name)
+        # task not found because due date not given and task name not
+        # quoted so is parsed as task 'two' instead
         self.assertEqual(
             views.TASK_NOT_FOUND,
             self.redirect.getvalue().rstrip()
@@ -314,3 +341,81 @@ class DataTests(Redirector):
                     Task.name == task_name
                 ))
             )
+
+    def test_task_existence(self):
+        task_name = 'bert'
+        with test_database(test_db, (Task, TaskInstance)):
+            self.assertFalse(views._task_exists(task_name))
+            Task.create(name=task_name, priority=1)
+            self.assertTrue(views._task_exists(task_name))
+
+    def test_get_open_task_instance_no_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            with self.assertRaises(Task.DoesNotExist):
+                views._get_open_task_instance('run')
+
+    def test_get_open_task_instance_no_existing_instance(self):
+        task_name = 'stop gob'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=4)
+            inst = views._get_open_task_instance(task_name)
+            self.verify_new_task_instance(inst, task_name)
+
+    def test_get_open_task_instance_no_open_instance(self):
+        """ Don't use a done task instance """
+        task_name = 'loremipsum'
+        with test_database(test_db, (Task, TaskInstance)):
+            task = Task.create(name=task_name, priority=4)
+            TaskInstance.create(
+                task=task,
+                due=date.today(),
+                done=date.today()
+            )
+            inst = views._get_open_task_instance(task_name)
+            self.verify_new_task_instance(inst, task_name)
+
+    def verify_new_task_instance(self, inst, task_name):
+        self.assertIsInstance(inst, TaskInstance)
+        self.assertEqual(task_name, inst.task.name)
+        self.assertEqual(
+            datetime.combine(date.today(), datetime.min.time()),
+            inst.due
+        )
+        self.assertIsNone(inst.done)
+        self.assertTrue(inst.is_dirty())
+
+    def test_get_open_task_instance_existing_open_instance(self):
+        task_name = 'blech'
+        with test_database(test_db, (Task, TaskInstance)):
+            task = Task.create(name=task_name, priority=4)
+            self.verify_open_instance_count(task_name, 0)
+            TaskInstance.create(task=task, due=datetime(2015, 10, 11))
+            self.verify_open_instance_count(task_name, 1)
+            inst = views._get_open_task_instance(task_name)
+            self.assertIsInstance(inst, TaskInstance)
+            self.assertEqual(task_name, inst.task.name)
+            self.assertEqual(datetime(2015, 10, 11, 0, 0, 0), inst.due)
+            self.assertIsNone(inst.done)
+            self.assertFalse(inst.is_dirty())
+            self.verify_open_instance_count(task_name, 1)
+
+    def test_get_open_task_instance_multiple_open_instances(self):
+        task_name = 'sharpen pencils'
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            self.verify_open_instance_count(task_name, 3)
+            inst = views._get_open_task_instance(task_name)
+            self.verify_open_instance_count(task_name, 1)
+            self.assertIsInstance(inst, TaskInstance)
+            self.assertEqual(task_name, inst.task.name)
+            self.assertEqual(datetime(2016, 10, 3), inst.due)
+            self.assertIsNone(inst.done)
+            self.assertFalse(inst.is_dirty())
+
+    def verify_open_instance_count(self, task_name, expected_count):
+        query = (TaskInstance.select()
+                 .join(Task).where(
+                    Task.name == task_name,
+                    TaskInstance.done >> None
+                  ))
+        self.assertEqual(expected_count, len(query))

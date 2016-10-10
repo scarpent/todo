@@ -123,3 +123,12 @@ class OutputTests(Redirector):
             util.PRIORITY_NUMBER_ERROR,
             self.redirect.getvalue().rstrip()
         )
+
+
+class CalcDueDateTests(TestCase):
+
+    def test_days(self):
+        pass
+
+    def test_zero(self):
+        pass

@@ -95,6 +95,19 @@ class OutputTests(Redirector):
                 self.redirect.getvalue().rstrip()
             )
 
+    def test_set_due_date(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'sparkle'
+        due_date = '2050-01-01'
+        with Command(args) as interpreter:
+            Task.create(name=task_name, priority=2)
+            interpreter.do_due(task_name + ' ' + due_date)
+            self.assertEqual(
+                views.TASK_DUE_DATE_SET + due_date,
+                self.redirect.getvalue().rstrip()
+            )
+
     def test_syntax_error(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
@@ -183,5 +196,5 @@ class MiscTests(TestCase):
         create_history_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            instances = interpreter.complete_history('cli', '', '', '')
+            instances = interpreter.complete_due('cli', '', '', '')
             self.assertEqual(['climb mountain'], instances)

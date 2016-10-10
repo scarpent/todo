@@ -150,10 +150,10 @@ class Command(cmd.Cmd, object):
     def do_due(self, args):
         """Set or update due date of a task (not implemented)
 
-        Syntax: due <date> task
+        Syntax: due task <due date or increment>
         """
         # support things like 0 (today) 1 (tomorrow) 1h (1 hour) 30m...
-        pass
+        views.set_due_date(args)
 
     def complete_due(self, text, line, begidx, endidx):
         return views.get_task_names(starting_with=text)

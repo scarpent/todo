@@ -5,6 +5,8 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import re
+
 from datetime import datetime
 
 
@@ -59,3 +61,7 @@ def valid_priority_number(number):
     except ValueError:
         print(PRIORITY_NUMBER_ERROR)
         return False
+
+
+def calc_due_date(due):
+    pass
