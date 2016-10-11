@@ -121,10 +121,11 @@ class Command(cmd.Cmd, object):
     def do_delete(self, args):
         """Delete a task
 
-        Syntax: delete [task]
+        Syntax: delete <task>
 
         - Priority will be set to 9 so that it is hidden and ignored
         - If priority is already 9, it will be deleted FOREVER
+        - Quotes optional (even if task name has spaces)
         """
         views.delete_task(args)
 
@@ -137,7 +138,7 @@ class Command(cmd.Cmd, object):
     def do_history(self, args):
         """Show history of a task
 
-        Syntax: history [task]
+        Syntax: history <task>
         """
         views.list_task_instances(args)
 
@@ -148,11 +149,31 @@ class Command(cmd.Cmd, object):
     complete_h = complete_history
 
     def do_due(self, args):
-        """Set or update due date of a task (not implemented)
+        """Set or update due date of a task
 
-        Syntax: due task <due date or increment>
+        Syntax: due <task> <due date or increment>
+
+        Due date may be an actual calendar date in the form of
+        YYYY-MM-DD, which will be used as is, or a number and a letter
+        code for units (hours, days, weeks, months, years) by which the
+        current due date of a task will be moved forward or backward. If
+        there is no current due date, today's date will be used before
+        adding or subtracting.
+
+        Examples:
+            <due>         set due date to:
+            2019-07-18    July 18, 2019
+            2d            two days ahead
+            5h            five hours ahead
+           -1m            one month earlier
+           +2y            two years ahead (plus is optional)
+
+        - Additional letters may be present and will be ignored, e.g
+        5days, -2hours, 1month
+        - Spaces may be present between number and unit, if quoted, e.g.
+        '1 week', '2 months', '-5 days'
+        - Quotes around the task name are optional (even if spaces)
         """
-        # support things like 0 (today) 1 (tomorrow) 1h (1 hour) 30m...
         views.set_due_date(args)
 
     def complete_due(self, text, line, begidx, endidx):

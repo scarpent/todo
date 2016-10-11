@@ -10,6 +10,7 @@ import views
 
 from tests.redirector import Redirector
 from tests.data_setup import init_temp_database
+from tests.data_setup import create_test_data
 from tests.data_setup import create_history_test_data
 
 
@@ -38,5 +39,15 @@ class OutputTests(Redirector):
         todo.main(['-o', 'history booger', '--database', temp_db])
         self.assertEqual(
             views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_delete_quoted_task_name(self):
+        temp_db = init_temp_database()
+        create_test_data()
+        # bonus test of handling quotes around gather wool...
+        todo.main(['-o', 'delete "gather wool"', '--database', temp_db])
+        self.assertEqual(
+            views.TASK_DELETED + 'gather wool',
             self.redirect.getvalue().rstrip()
         )

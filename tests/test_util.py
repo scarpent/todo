@@ -236,3 +236,21 @@ class DueDateTests(Redirector):
             datetime(2015, 4, 7, 1, 5),
             util.get_due_date('-5hour', datetime(2015, 4, 7, 6, 5))
         )
+
+
+class MiscTests(TestCase):
+
+    def test_remove_wrapping_quotes(self):
+        # quotes must match
+        self.assertEqual('bob', util.remove_wrapping_quotes('"bob"'))
+        self.assertEqual('bob', util.remove_wrapping_quotes("'bob'"))
+        self.assertEqual(
+            'good morning',
+            util.remove_wrapping_quotes('"good morning"')
+        )
+        self.assertEqual('bob"', util.remove_wrapping_quotes('bob"'))
+        self.assertEqual("'tis", util.remove_wrapping_quotes("'tis"))
+        self.assertEqual(
+            '\'bob"',
+            util.remove_wrapping_quotes('\'bob"')
+        )

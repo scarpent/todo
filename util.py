@@ -71,9 +71,9 @@ def valid_priority_number(number):
 def get_due_date(due, current_due_date):
     """
     :param due: May be an actual date in the form of YYYY-MM-DD, which
-    will be used as is, if valid, or a number N and a letter code for
+    will be used as is (if valid), or a number N and a letter code for
     units (hours, days, weeks, months, years) which will be used to
-    advance the start_date N units.
+    advance the start_date N units. (Or go back, if -N.)
     :param current_due_date: Datetime object representing current due date
     :return: None (if invalid due), or datetime object for due date
     """
@@ -115,3 +115,7 @@ def get_due_date(due, current_due_date):
         second=0,
         microsecond=0
     )
+
+
+def remove_wrapping_quotes(text):
+    return re.sub(r'''(['"])(.+)\1''', r'\2', text)

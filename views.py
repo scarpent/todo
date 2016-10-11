@@ -53,6 +53,9 @@ def delete_task(name):
     if not name:
         return
 
+    # since no shlex parsing, this will remove quotes if present
+    name = util.remove_wrapping_quotes(name)
+
     try:
         task = Task.get(name=name)
     except Task.DoesNotExist:

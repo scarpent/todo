@@ -221,7 +221,7 @@ class DataTests(Redirector):
             self.assertEqual(expected, views._get_task_list(3))
 
     def test_get_task_names(self):
-        # goner is excluded in results because already deleted
+        # goner is excluded in task name listing because "deleted" (p=9)
         expected = ({
             'gather wool',
             'sharpen pencils',
@@ -234,7 +234,7 @@ class DataTests(Redirector):
             # test condition is present...
             try:
                 goner = Task.get(Task.name == 'goner')
-            except Task.DoesNotExist:
+            except Task.DoesNotExist:  # pragma: no cover
                 self.fail('goner task does not exist but it should')
             self.assertEqual(util.PRIORITY_DELETED, goner.priority)
             self.assertEqual(expected, set(views.get_task_names()))
