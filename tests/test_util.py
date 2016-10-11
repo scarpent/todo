@@ -175,17 +175,29 @@ class DueDateTests(Redirector):
     def test_due_date_hour_delta(self):
         self.assertEqual(
             datetime(2015, 4, 7, 16, 5, 22),
-            util.get_due_date('10happy', datetime(2015, 4, 7, 6, 5, 22))
+            util.get_due_date('10hour', datetime(2015, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2015, 4, 7, 16, 5, 22),
+            util.get_due_date('10hours', datetime(2015, 4, 7, 6, 5, 22))
         )
         self.assertEqual(
             datetime(2015, 4, 8, 7, 5, 22),
             util.get_due_date('25h', datetime(2015, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            None,
+            util.get_due_date('10houry', datetime(2015, 4, 7, 6, 5, 22))
         )
 
     def test_due_date_day_delta(self):
         self.assertEqual(
             datetime(2015, 4, 7),
             util.get_due_date('1d', datetime(2015, 4, 6))
+        )
+        self.assertEqual(
+            datetime(2015, 4, 14),
+            util.get_due_date('8', datetime(2015, 4, 6))
         )
         self.assertEqual(
             datetime(2015, 4, 7),
@@ -198,11 +210,23 @@ class DueDateTests(Redirector):
                 datetime(2006, 1, 25, 21, 30, 59, 445566)
             )
         )
+        self.assertEqual(
+            None,
+            util.get_due_date('2da', datetime(2015, 4, 7, 6, 5, 22))
+        )
 
     def test_due_date_week_delta(self):
         self.assertEqual(
             datetime(2014, 1, 10),
             util.get_due_date('2w', datetime(2013, 12, 27, 5))
+        )
+        self.assertEqual(
+            datetime(2014, 1, 10),
+            util.get_due_date('2week', datetime(2013, 12, 27, 5))
+        )
+        self.assertEqual(
+            datetime(2014, 1, 10),
+            util.get_due_date('2weeks', datetime(2013, 12, 27, 5))
         )
 
     def test_due_date_month_delta(self):
@@ -211,14 +235,30 @@ class DueDateTests(Redirector):
             util.get_due_date('1month', datetime(2016, 1, 30))
         )
         self.assertEqual(
+            datetime(2016, 6, 30),
+            util.get_due_date('3months', datetime(2016, 3, 31))
+        )
+        self.assertEqual(
             datetime(2018, 3, 15),
             util.get_due_date('26m', datetime(2016, 1, 15))
+        )
+        self.assertEqual(
+            None,
+            util.get_due_date('3monkey', datetime(2001, 3, 18, 3))
         )
 
     def test_due_date_year_delta(self):
         self.assertEqual(
             datetime(2999, 12, 31),
             util.get_due_date('1000y', datetime(1999, 12, 31, 1, 1, 1))
+        )
+        self.assertEqual(
+            datetime(2009, 12, 31),
+            util.get_due_date('10year', datetime(1999, 12, 31, 1, 1, 1))
+        )
+        self.assertEqual(
+            datetime(2007, 12, 31),
+            util.get_due_date('2years', datetime(2005, 12, 31, 1, 1, 1))
         )
 
     def test_due_date_plus_minus_delta(self):
@@ -236,10 +276,38 @@ class DueDateTests(Redirector):
         )
 
     def test_zero(self):
-        pass
+        self.assertEqual(
+            datetime(2009, 4, 7, 6, 5, 22),
+            util.get_due_date('0h', datetime(2009, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0d', datetime(2009, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0d', datetime(2009, 4, 7))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0', datetime(2009, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0w', datetime(2009, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0m', datetime(2009, 4, 7, 6, 5, 22))
+        )
+        self.assertEqual(
+            datetime(2009, 4, 7),
+            util.get_due_date('0y', datetime(2009, 4, 7, 6, 5, 22))
+        )
 
     def test_now(self):
         pass
+
 
 class MiscTests(TestCase):
 

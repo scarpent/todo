@@ -86,7 +86,8 @@ def get_due_date(due, current_due_date):
             print(DUE_DATE_ERROR)
             return None
 
-    m = re.match(r'^([-+]?\d+)\s*(?:([hdwmy]).*)?$', due)
+    # todo: be pickier about what's allowed: hour but not happy, e.g.
+    m = re.match(r'^([-+]?\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|m(?:onths?)?|y(?:ears?)?)?$', due)
     if not m:
         print(DUE_DATE_ERROR)
         return None
@@ -94,16 +95,16 @@ def get_due_date(due, current_due_date):
     num = int(m.groups()[0])
     unit = m.groups()[1]
 
-    if unit == 'h':
+    if unit in ['h', 'hour', 'hours']:
         return current_due_date + relativedelta(hours=num)
 
-    if unit == 'w':
+    if unit in ['w', 'week', 'weeks']:
         r = relativedelta(weeks=num)
-    elif unit == 'm':
+    elif unit in ['m', 'month', 'months']:
         r = relativedelta(months=num)
-    elif unit == 'y':
+    elif unit in ['y', 'year', 'years']:
         r = relativedelta(years=num)
-    else:  # default is days
+    else:  # default is d|day|days
         r = relativedelta(days=num)
 
     return (current_due_date + r).replace(
