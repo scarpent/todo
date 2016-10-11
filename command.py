@@ -88,16 +88,17 @@ class Command(cmd.Cmd, object):
                 command=self.aliases[alias].__name__[3:]
             ))
 
-    # todo: option to only list tasks due
     def do_list(self, args):
         """List tasks
 
-        Syntax: list [priority]
+        Syntax: list [priority] [due]
+                list [due] [priority]
 
         - Optionally specify a priority where only tasks less than
           or equal to that priority are listed (e.g. "list 2" will
           list all tasks with priority 1 or 2)
-        - Priority "all" or "deleted" will show deleted tasks
+        - [priority] "all" or "deleted" will show deleted tasks
+        - [due] "due" will show only tasks that are due right now
         """
         views.list_tasks(args)
 
@@ -151,28 +152,38 @@ class Command(cmd.Cmd, object):
     def do_due(self, args):
         """Set or update due date of a task
 
-        Syntax: due <task> <due date or increment>
+        Syntax: due <task> <due value>
 
-        Due date may be an actual calendar date in the form of
-        YYYY-MM-DD, which will be used as is, or a number and a letter
-        code for units (hours, days, weeks, months, years) by which the
-        current due date of a task will be moved forward or backward. If
-        there is no current due date, today's date will be used before
-        adding or subtracting.
+        <due value> may be:
+            - An actual calendar date in the form of YYYY-MM-DD, which
+              will be used as is
+            - "Now", which will set the due date to right now
+            - A number and a letter code for units (hours, days, weeks,
+              months, years) by which the current due date of a task
+              will be moved forward or backward. If there is no current
+              due date, today's date will be used before adding or
+              subtracting
 
         Examples:
             <due>         set due date to:
+            ---------------------------------------------------
             2019-07-18    July 18, 2019
+            now           right now, to the second
             2d            two days ahead
+            5             five days ahead (default unit = days)
             5h            five hours ahead
            -1m            one month earlier
            +2y            two years ahead (plus is optional)
 
-        - Additional letters may be present and will be ignored, e.g
-        5days, -2hours, 1month
-        - Spaces may be present between number and unit, if quoted, e.g.
-        '1 week', '2 months', '-5 days'
-        - Quotes around the task name are optional (even if spaces)
+        Notes:
+            - For units other than hours, the time will be set to 12am
+            - If 0 is given, the due date will remain the same but the
+              time will be rewound to 0 for units other than hours
+            - Additional letters may be present and will be ignored,
+              e.g 5days, -2hours, 1month
+            - Spaces may be present between number and unit, if quoted,
+              e.g. "1 week", "2 months", "-5 days"
+            - Quotes around the task name are optional (even if spaces)
         """
         views.set_due_date(args)
 
