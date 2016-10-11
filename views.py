@@ -24,15 +24,22 @@ TASK_ADDED = 'Added task: '
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
 TASK_DELETED = 'Deleted task: '
 TASK_DELETED_ALIASES = ['all', 'deleted']
+TASKS_DUE = 'due'
 TASK_NOT_FOUND = '*** Task not found'
+TASK_NAME_REQUIRED = '*** Task name required'
+TASK_NAME_AND_DUE_REQUIRED = '*** Task name and "due" are both required'
 TASK_REALLY_DELETED = 'REALLY deleted task: '
 TASK_DUE_DATE_SET = 'Due date set: '
+DUE_DATE_LIST_ALL_TASKS = datetime(1970, 1, 1)
 
 
 def add_task(args):
-    args = shlex.split(args)
+    # args should be a string, but we'll make sure it isn't None
+    # (which would cause the string to be read from stdin)
+    args = shlex.split(args if args else '')
 
     if len(args) == 0:
+        print(TASK_NAME_REQUIRED)
         return
     name = args[0]
 
@@ -50,11 +57,11 @@ def add_task(args):
 
 
 def delete_task(name):
-    if not name:
-        return
-
     # since no shlex parsing, this will remove quotes if present
     name = util.remove_wrapping_quotes(name)
+    if not name:
+        print(TASK_NAME_REQUIRED)
+        return
 
     try:
         task = Task.get(name=name)
@@ -72,14 +79,19 @@ def delete_task(name):
 
 
 def set_due_date(args):
-    args = shlex.split(args)
+    args = shlex.split(args if args else '')
 
     if len(args) < 2:
+        print(TASK_NAME_AND_DUE_REQUIRED)
         return
+
     task_name = ' '.join(args[:-1])
     due = args[-1]
 
-    if not _task_exists(task_name):
+    try:
+        Task.get(name=task_name)
+    except Task.DoesNotExist:
+        print(TASK_NOT_FOUND + ': ' + task_name)
         return
 
     open_task_instance = _get_open_task_instance(task_name)
@@ -91,32 +103,39 @@ def set_due_date(args):
 
 
 def list_tasks(args):
+    args = shlex.split(args if args else '')
+
+    if TASKS_DUE in args:
+        args.remove(TASKS_DUE)
+        due_date_min = datetime.now()
+    else:
+        due_date_min = None
+
     if args:
-        if args in TASK_DELETED_ALIASES:
-            args = util.PRIORITY_DELETED
-        if not util.valid_priority_number(args):
+        priority_max = args[0]
+        if priority_max in TASK_DELETED_ALIASES:
+            priority_max = util.PRIORITY_DELETED
+        if not util.valid_priority_number(priority_max):
             return
     else:
-        args = util.PRIORITY_LOW
+        priority_max = util.PRIORITY_LOW
 
-    tasks = _get_task_list(priority_max_value=int(args))
+    tasks = _get_task_list(
+        priority_max=int(priority_max),
+        due_date_min=due_date_min
+    )
     if tasks:
         _print_task_list(tasks)
     else:
         print(NO_TASKS)
 
 
-def _task_exists(name):
+def list_task_instances(name):
+    name = util.remove_wrapping_quotes(name)
     try:
         Task.get(name=name)
-        return True
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
-        return False
-
-
-def list_task_instances(name):
-    if not name or not _task_exists(name):
         return
 
     instances = _get_task_instance_list(name)
@@ -166,20 +185,27 @@ def _print_task_instance(done='', note=None):
     ))
 
 
-def _get_task_list(priority_max_value=util.PRIORITY_LOW):
+def _get_task_list(priority_max=util.PRIORITY_LOW, due_date_min=None):
     subquery = (TaskInstance
                 .select(fn.Max(TaskInstance.due))
                 .where(
                     TaskInstance.task_id == Task.id,
-                    TaskInstance.done >> None))
+                    TaskInstance.done >> None
+                ))
 
     query = (Task
              .select(Task, TaskInstance, subquery.alias('due'))
              .join(TaskInstance, JOIN.LEFT_OUTER)
-             .where(Task.priority <= priority_max_value))
+             .where(Task.priority <= priority_max))
 
     tasks = []
     for row in query.aggregate_rows():
+
+        if due_date_min and \
+            (row.due is None or
+             util.get_datetime(row.due) > due_date_min):
+                continue
+
         task = model_to_dict(row)
         task['due'] = util.get_datetime(row.due)
         tasks.append(task)

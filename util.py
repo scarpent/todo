@@ -28,6 +28,7 @@ PRIORITY_NUMBER_ERROR = (
     )
 )
 DUE_DATE_ERROR = '*** Invalid due date'
+DUE_NOW = 'now'
 
 
 def get_list_sorting_key_value(x):
@@ -70,14 +71,14 @@ def valid_priority_number(number):
 
 def get_due_date(due, current_due_date):
     """
-    :param due: May be an actual date in the form of YYYY-MM-DD, which
-    will be used as is (if valid), or a number N and a letter code for
-    units (hours, days, weeks, months, years) which will be used to
-    advance the start_date N units. (Or go back, if -N.)
-    :param current_due_date: Datetime object representing current due date
+    :param due: see command.py do_due help docstring
+    :param current_due_date: Datetime object representing current due
     :return: None (if invalid due), or datetime object for due date
     """
     due = due.strip().lower()
+    if due == DUE_NOW:
+        return datetime.now().replace(microsecond=0)
+
     if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due):
         try:
             return get_datetime_from_date_only_string(due)
@@ -85,7 +86,7 @@ def get_due_date(due, current_due_date):
             print(DUE_DATE_ERROR)
             return None
 
-    m = re.match(r'^([-+]?\d+)\s*([hdwmy]).*$', due)
+    m = re.match(r'^([-+]?\d+)\s*(?:([hdwmy]).*)?$', due)
     if not m:
         print(DUE_DATE_ERROR)
         return None
@@ -96,18 +97,14 @@ def get_due_date(due, current_due_date):
     if unit == 'h':
         return current_due_date + relativedelta(hours=num)
 
-    if unit == 'd':
-        r = relativedelta(days=num)
-    elif unit == 'w':
+    if unit == 'w':
         r = relativedelta(weeks=num)
     elif unit == 'm':
         r = relativedelta(months=num)
     elif unit == 'y':
         r = relativedelta(years=num)
-    else:  # pragma: no cover
-        # this shouldn't happen if our conditions here match the regex
-        print(DUE_DATE_ERROR + ' (unhandled time unit: ' + unit + ')')
-        return None
+    else:  # default is days
+        r = relativedelta(days=num)
 
     return (current_due_date + r).replace(
         hour=0,

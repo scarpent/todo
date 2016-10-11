@@ -165,13 +165,11 @@ class DueDateTests(Redirector):
         )
 
     def test_bad_due_date(self):
-        # later we may want to handle 0 without a letter, but for now:
-        self.assertIsNone(util.get_due_date('0', datetime.today()))
+        self.assertIsNone(util.get_due_date('5z', datetime.today()))
         self.assertEqual(
             util.DUE_DATE_ERROR,
             self.redirect.getvalue().rstrip()
         )
-        self.assertIsNone(util.get_due_date('5z', datetime.today()))
         self.assertIsNone(util.get_due_date('d4', datetime.today()))
 
     def test_due_date_hour_delta(self):
@@ -237,6 +235,11 @@ class DueDateTests(Redirector):
             util.get_due_date('-5hour', datetime(2015, 4, 7, 6, 5))
         )
 
+    def test_zero(self):
+        pass
+
+    def test_now(self):
+        pass
 
 class MiscTests(TestCase):
 

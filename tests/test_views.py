@@ -78,7 +78,7 @@ class FileTests(TestCase):
         expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            views.list_tasks(2)
+            views.list_tasks('2')
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_list_sort(self):
@@ -99,7 +99,7 @@ class FileTests(TestCase):
             task = Task.get(name='sharpen pencils')
             task.priority = util.PRIORITY_DELETED
             task.save()
-            views.list_tasks(util.PRIORITY_DELETED)
+            views.list_tasks(str(util.PRIORITY_DELETED))
         self.assertTrue(self.compare_files(expected, actual))
 
     def test_history(self):
@@ -129,9 +129,16 @@ class OutputTests(Redirector):
 
     def test_set_due_date_not_enough_args(self):
         views.set_due_date('blurg')
-        self.assertEqual('', self.redirect.getvalue().rstrip())
+        self.assertEqual(
+            views.TASK_NAME_AND_DUE_REQUIRED,
+            self.redirect.getvalue().rstrip()
+        )
+        self.reset_redirect()
         views.set_due_date('"blurg blurg"')
-        self.assertEqual('', self.redirect.getvalue().rstrip())
+        self.assertEqual(
+            views.TASK_NAME_AND_DUE_REQUIRED,
+            self.redirect.getvalue().rstrip()
+        )
 
     def test_add_duplicate_task(self):
         task_name = 'blah'
@@ -147,13 +154,22 @@ class OutputTests(Redirector):
     def test_add_nothing(self):
         with test_database(test_db, (Task, TaskInstance)):
             views.add_task('')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
+            self.assertEqual(
+                views.TASK_NAME_REQUIRED,
+                self.redirect.getvalue().rstrip()
+            )
             self.reset_redirect()
             views.add_task('   ')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
+            self.assertEqual(
+                views.TASK_NAME_REQUIRED,
+                self.redirect.getvalue().rstrip()
+            )
             self.reset_redirect()
             views.add_task('\n')
-            self.assertEqual('', self.redirect.getvalue().rstrip())
+            self.assertEqual(
+                views.TASK_NAME_REQUIRED,
+                self.redirect.getvalue().rstrip()
+            )
 
     def test_delete_nonexistent_task(self):
         with test_database(test_db, (Task, TaskInstance)):
@@ -167,7 +183,7 @@ class OutputTests(Redirector):
         with test_database(test_db, (Task, TaskInstance)):
             views.set_due_date('blurg 1')
         self.assertEqual(
-            views.TASK_NOT_FOUND,
+            views.TASK_NOT_FOUND + ': blurg',
             self.redirect.getvalue().rstrip()
         )
 
@@ -179,7 +195,7 @@ class OutputTests(Redirector):
         # task not found because due date not given and task name not
         # quoted so is parsed as task 'two' instead
         self.assertEqual(
-            views.TASK_NOT_FOUND,
+            views.TASK_NOT_FOUND + ': two',
             self.redirect.getvalue().rstrip()
         )
 
@@ -348,13 +364,6 @@ class DataTests(Redirector):
                     Task.name == task_name
                 ))
             )
-
-    def test_task_existence(self):
-        task_name = 'bert'
-        with test_database(test_db, (Task, TaskInstance)):
-            self.assertFalse(views._task_exists(task_name))
-            Task.create(name=task_name, priority=1)
-            self.assertTrue(views._task_exists(task_name))
 
     def test_get_open_task_instance_no_task(self):
         with test_database(test_db, (Task, TaskInstance)):

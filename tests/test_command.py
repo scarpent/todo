@@ -43,7 +43,7 @@ class OutputTests(Redirector):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            interpreter.do_list(None)
+            interpreter.do_list('')
         self.assertEqual(
             views.NO_TASKS,
             self.redirect.getvalue().rstrip()
@@ -173,7 +173,7 @@ class MiscTests(TestCase):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            self.assertTrue(interpreter.do_quit(None))
+            self.assertTrue(interpreter.do_quit(''))
 
     def test_complete_delete(self):
         temp_db = init_temp_database()
