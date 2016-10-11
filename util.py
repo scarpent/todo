@@ -87,7 +87,11 @@ def get_due_date(due, current_due_date):
             return None
 
     # todo: be pickier about what's allowed: hour but not happy, e.g.
-    m = re.match(r'^([-+]?\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|m(?:onths?)?|y(?:ears?)?)?$', due)
+    m = re.match(
+        r'^([-+]?\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|'
+        r'm(?:onths?)?|y(?:ears?)?)?$',
+        due
+    )
     if not m:
         print(DUE_DATE_ERROR)
         return None
