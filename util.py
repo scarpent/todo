@@ -68,7 +68,15 @@ def valid_priority_number(number):
         return False
 
 
-def get_due_date(due, start_date):
+def get_due_date(due, current_due_date):
+    """
+    :param due: May be an actual date in the form of YYYY-MM-DD, which
+    will be used as is, if valid, or a number N and a letter code for
+    units (hours, days, weeks, months, years) which will be used to
+    advance the start_date N units.
+    :param current_due_date: Datetime object representing current due date
+    :return: None (if invalid due), or datetime object for due date
+    """
     due = due.strip().lower()
     if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due):
         try:
@@ -77,7 +85,7 @@ def get_due_date(due, start_date):
             print(DUE_DATE_ERROR)
             return None
 
-    m = re.match(r'^(\d+)\s*([hdwmy]).*$', due)
+    m = re.match(r'^([-+]?\d+)\s*([hdwmy]).*$', due)
     if not m:
         print(DUE_DATE_ERROR)
         return None
@@ -86,7 +94,7 @@ def get_due_date(due, start_date):
     unit = m.groups()[1]
 
     if unit == 'h':
-        return start_date + relativedelta(hours=num)
+        return current_due_date + relativedelta(hours=num)
 
     if unit == 'd':
         r = relativedelta(days=num)
@@ -96,8 +104,12 @@ def get_due_date(due, start_date):
         r = relativedelta(months=num)
     elif unit == 'y':
         r = relativedelta(years=num)
+    else:  # pragma: no cover
+        # this shouldn't happen if our conditions here match the regex
+        print(DUE_DATE_ERROR + ' (unhandled time unit: ' + unit + ')')
+        return None
 
-    return (start_date + r).replace(
+    return (current_due_date + r).replace(
         hour=0,
         minute=0,
         second=0,

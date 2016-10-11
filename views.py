@@ -76,21 +76,15 @@ def set_due_date(args):
     task_name = ' '.join(args[:-1])
     due = args[-1]
 
-    try:
-        task = Task.get(name=task_name)
-    except Task.DoesNotExist:
-        print(TASK_NOT_FOUND)
+    if not _task_exists(task_name):
         return
 
-    if task.priority == util.PRIORITY_DELETED:
-        print('This task was deleted. Bringing it back to life...')
-        task.priority = 1
-        task.save()
-
     open_task_instance = _get_open_task_instance(task_name)
-
-    # print('task: ' + task.name)
-    print(TASK_DUE_DATE_SET + due)
+    due_datetime = util.get_due_date(due, open_task_instance.due)
+    if due_datetime:
+        open_task_instance.due = due_datetime
+        open_task_instance.save()
+        print(TASK_DUE_DATE_SET + util.get_date_string(due_datetime))
 
 
 def list_tasks(args):
@@ -232,7 +226,10 @@ def _get_open_task_instance(task_name):
 
 def get_task_names(starting_with=''):
     query = (Task.select(Task.name)
-             .where(Task.name.startswith(starting_with)))
+             .where(
+                Task.name.startswith(starting_with),
+                Task.priority != util.PRIORITY_DELETED
+              ))
     tasks = []
     for task in query:
         tasks.append(task.name)

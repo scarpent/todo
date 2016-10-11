@@ -181,7 +181,8 @@ class MiscTests(TestCase):
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             tasks = interpreter.complete_delete('g', None, None, None)
-            self.assertEqual(({'gather wool', 'goner'}), set(tasks))
+            # there is a "deleted" task, goner, that shouldn't appear
+            self.assertEqual(({'gather wool'}), set(tasks))
 
     def test_complete_history(self):
         temp_db = init_temp_database()

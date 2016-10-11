@@ -221,19 +221,26 @@ class DataTests(Redirector):
             self.assertEqual(expected, views._get_task_list(3))
 
     def test_get_task_names(self):
+        # goner is excluded in results because already deleted
         expected = ({
             'gather wool',
-            'goner',
             'sharpen pencils',
             'just do it',
             'clip toenails'
         })
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
+            # paranoia sometimes wants me to make sure the expected
+            # test condition is present...
+            try:
+                goner = Task.get(Task.name == 'goner')
+            except Task.DoesNotExist:
+                self.fail('goner task does not exist but it should')
+            self.assertEqual(util.PRIORITY_DELETED, goner.priority)
             self.assertEqual(expected, set(views.get_task_names()))
             self.assertEqual(expected, set(views.get_task_names('')))
             self.assertEqual(
-                ({'gather wool', 'goner'}),
+                ({'gather wool'}),
                 set(views.get_task_names('g'))
             )
             self.assertEqual([], views.get_task_names('xyz'))

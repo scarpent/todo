@@ -5,7 +5,6 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
-from datetime import date
 from datetime import datetime
 from unittest import TestCase
 
@@ -180,6 +179,10 @@ class DueDateTests(Redirector):
             datetime(2015, 4, 7, 16, 5, 22),
             util.get_due_date('10happy', datetime(2015, 4, 7, 6, 5, 22))
         )
+        self.assertEqual(
+            datetime(2015, 4, 8, 7, 5, 22),
+            util.get_due_date('25h', datetime(2015, 4, 7, 6, 5, 22))
+        )
 
     def test_due_date_day_delta(self):
         self.assertEqual(
@@ -209,9 +212,27 @@ class DueDateTests(Redirector):
             datetime(2016, 2, 29),
             util.get_due_date('1month', datetime(2016, 1, 30))
         )
+        self.assertEqual(
+            datetime(2018, 3, 15),
+            util.get_due_date('26m', datetime(2016, 1, 15))
+        )
 
     def test_due_date_year_delta(self):
         self.assertEqual(
             datetime(2999, 12, 31),
             util.get_due_date('1000y', datetime(1999, 12, 31, 1, 1, 1))
+        )
+
+    def test_due_date_plus_minus_delta(self):
+        self.assertEqual(
+            datetime(2015, 4, 11),
+            util.get_due_date('+5d', datetime(2015, 4, 6))
+        )
+        self.assertEqual(
+            datetime(2015, 4, 1),
+            util.get_due_date('-5d', datetime(2015, 4, 6, 5, 4, 3))
+        )
+        self.assertEqual(
+            datetime(2015, 4, 7, 1, 5),
+            util.get_due_date('-5hour', datetime(2015, 4, 7, 6, 5))
         )
