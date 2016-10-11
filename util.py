@@ -8,6 +8,7 @@ from __future__ import unicode_literals
 import re
 
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 
 DATE_FORMAT = '%Y-%m-%d'
@@ -70,15 +71,35 @@ def valid_priority_number(number):
 def get_due_date(due, start_date):
     due = due.strip().lower()
     if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due):
-        return get_datetime_from_date_only_string(due)
+        try:
+            return get_datetime_from_date_only_string(due)
+        except ValueError:
+            print(DUE_DATE_ERROR)
+            return None
 
-    # valid_patterns = [
-    #     r'^\d\d\d\d-\d\d-\d\d$',
-    #     r'^\d+\s*(minute|h(ours?)?|d(ays?)?',
-    #     r'^\d+\s*(w(eeks?)?|m(onths?)?|y(ears?)?'
-    # ]
-    # for pattern in valid_patterns:
-    #     if re.search(pattern, due.strip().lower()):
-    #         return True
-    # print(DUE_DATE_ERROR)
-    # return False
+    m = re.match(r'^(\d+)\s*([hdwmy]).*$', due)
+    if not m:
+        print(DUE_DATE_ERROR)
+        return None
+
+    num = int(m.groups()[0])
+    unit = m.groups()[1]
+
+    if unit == 'h':
+        return start_date + relativedelta(hours=num)
+
+    if unit == 'd':
+        r = relativedelta(days=num)
+    elif unit == 'w':
+        r = relativedelta(weeks=num)
+    elif unit == 'm':
+        r = relativedelta(months=num)
+    elif unit == 'y':
+        r = relativedelta(years=num)
+
+    return (start_date + r).replace(
+        hour=0,
+        minute=0,
+        second=0,
+        microsecond=0
+    )

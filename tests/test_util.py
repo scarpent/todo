@@ -140,9 +140,9 @@ class OutputTests(Redirector):
         )
 
 
-class DueDateTests(TestCase):
+class DueDateTests(Redirector):
 
-    def test_date(self):
+    def test_get_due_date_with_date(self):
         self.assertEqual(
             datetime(1997, 6, 1, 0),
             util.get_due_date('1997-06-01', datetime.today())
@@ -155,14 +155,63 @@ class DueDateTests(TestCase):
             datetime(1997, 6, 1),
             util.get_due_date('1997-6-1', datetime.today())
         )
-        with self.assertRaises(ValueError):
+
+    def test_output_bad_due_date_with_date(self):
+        self.assertIsNone(
             util.get_due_date('2016-14-36', datetime.today())
+        )
+        self.assertEqual(
+            util.DUE_DATE_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
 
-    def test_days(self):
-        pass
+    def test_bad_due_date(self):
+        # later we may want to handle 0 without a letter, but for now:
+        self.assertIsNone(util.get_due_date('0', datetime.today()))
+        self.assertEqual(
+            util.DUE_DATE_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+        self.assertIsNone(util.get_due_date('5z', datetime.today()))
+        self.assertIsNone(util.get_due_date('d4', datetime.today()))
 
-    def test_zero(self):
-        pass
+    def test_due_date_hour_delta(self):
+        self.assertEqual(
+            datetime(2015, 4, 7, 16, 5, 22),
+            util.get_due_date('10happy', datetime(2015, 4, 7, 6, 5, 22))
+        )
 
-    def test_less_than_zero(self):
-        pass
+    def test_due_date_day_delta(self):
+        self.assertEqual(
+            datetime(2015, 4, 7),
+            util.get_due_date('1d', datetime(2015, 4, 6))
+        )
+        self.assertEqual(
+            datetime(2015, 4, 7),
+            util.get_due_date('1day', datetime(2015, 4, 6, 5, 4, 3))
+        )
+        self.assertEqual(
+            datetime(2006, 1, 30),
+            util.get_due_date(
+                '5 days',
+                datetime(2006, 1, 25, 21, 30, 59, 445566)
+            )
+        )
+
+    def test_due_date_week_delta(self):
+        self.assertEqual(
+            datetime(2014, 1, 10),
+            util.get_due_date('2w', datetime(2013, 12, 27, 5))
+        )
+
+    def test_due_date_month_delta(self):
+        self.assertEqual(
+            datetime(2016, 2, 29),
+            util.get_due_date('1month', datetime(2016, 1, 30))
+        )
+
+    def test_due_date_year_delta(self):
+        self.assertEqual(
+            datetime(2999, 12, 31),
+            util.get_due_date('1000y', datetime(1999, 12, 31, 1, 1, 1))
+        )
