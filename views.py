@@ -7,7 +7,6 @@ from __future__ import unicode_literals
 
 import shlex
 
-from datetime import date
 from datetime import datetime
 
 from playhouse.shortcuts import model_to_dict
@@ -234,6 +233,15 @@ def _get_task_instance_list(task_name):
     instances = []
     for inst in query:
         instances.append({'done': inst.done, 'note': inst.note})
+
+    open_inst = _get_open_task_instance(task_name)
+    # only want to show if there's a note;
+    # otherwise would just be an empty line
+    if open_inst.note:
+        instances.append({
+            'done': open_inst.done,
+            'note': open_inst.note,
+        })
 
     return instances
 

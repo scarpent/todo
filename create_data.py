@@ -31,6 +31,7 @@ toenails = create_task(name='clip toenails', note='clip toenails', priority=1)
 wool = create_task(name='gather wool', note=None, priority=1)
 just = create_task(name='just do it', note='bo knows', priority=4)
 dragon = create_task(name='slay dragon', note='remember bow and arrow', priority=2)
+fret = create_task(name='fret', note='', priority=2)
 goner = create_task(name='goner', note="'tis deleted", priority=9)
 
 def create_instance(task, note, due, done=None):
@@ -48,8 +49,10 @@ create_instance(wool, 'land', datetime(2016, 9, 21), datetime(2014, 3, 2))
 create_instance(wool, 'open', datetime(2016, 10, 8))
 
 create_instance(just, 'just think about it', datetime(2016, 10, 7, 5, 5))
-TaskInstance.create(task=goner, due=datetime(2016, 8, 1, 2, 3))
-TaskInstance.create(task=goner, due=datetime(2016, 7, 6, 7, 8))
+create_instance(just, None, datetime(2016, 8, 1, 2, 3))
+create_instance(just, None, datetime(2016, 7, 6, 7, 8))
+
+create_instance(fret, None, datetime(2016, 10, 11), datetime(2016, 10, 11))
 
 
 db.close()

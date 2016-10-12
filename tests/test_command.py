@@ -190,7 +190,7 @@ class MiscTests(TestCase):
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
             instances = interpreter.complete_history('s', '', '', '')
-            self.assertEqual(['slay dragon'], instances)
+            self.assertEqual(['slay dragon', 'shave yak'], instances)
 
     def test_complete_due(self):
         temp_db = init_temp_database()

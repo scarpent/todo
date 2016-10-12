@@ -111,6 +111,11 @@ def create_history_test_data():
     TaskInstance.create(
         task=climb, note='get back to it', due=datetime(2016, 10, 8)
     )
+    yak = Task.create(name='shave yak', priority=1)
+    TaskInstance.create(
+        task=yak, note='yakkety sax',
+        due=datetime(1976, 3, 2), done=datetime(1976, 3, 4)
+    )
 
 
 def create_sort_test_data_for_temp_db():

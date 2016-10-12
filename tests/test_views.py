@@ -129,7 +129,7 @@ class FileTests(TestCase):
             views.list_tasks(str(util.PRIORITY_DELETED))
         self.assertTrue(self.compare_files(expected, actual))
 
-    def test_history(self):
+    def test_history_with_open_task(self):
         testfile = 'test_history'
         expected, actual = self.get_expected_and_actual(testfile)
         with test_database(test_db, (Task, TaskInstance)):
@@ -137,6 +137,13 @@ class FileTests(TestCase):
             views.list_task_instances('climb mountain')
         self.assertTrue(self.compare_files(expected, actual))
 
+    def test_history_with_no_open_task(self):
+        testfile = 'test_history_no_open_task'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with test_database(test_db, (Task, TaskInstance)):
+            create_history_test_data()
+            views.list_task_instances('shave yak')
+        self.assertTrue(self.compare_files(expected, actual))
 
 class OutputTests(Redirector):
 
@@ -315,18 +322,30 @@ class DataTests(Redirector):
             )
             self.assertEqual([], views.get_task_names('xyz'))
 
-    def test_get_task_instance_list(self):
+    def test_get_task_instance_list_with_open_instance(self):
         expected = [
             {'note': None, 'done': datetime(2012, 12, 4)},
             {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
             {'note': None, 'done': datetime(2015, 10, 30)},
             {'note': 'phew!', 'done': datetime(2016, 4, 10)},
+            {'note': 'get back to it', 'done': None},
         ]
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
             self.assertEqual(
                 expected,
                 views._get_task_instance_list('climb mountain')
+            )
+
+    def test_get_task_instance_list_with_no_open(self):
+        expected = [
+            {'note': 'yakkety sax', 'done': datetime(1976, 3, 4)}
+        ]
+        with test_database(test_db, (Task, TaskInstance)):
+            create_history_test_data()
+            self.assertEqual(
+                expected,
+                views._get_task_instance_list('shave yak')
             )
 
     def test_get_task_instance_list_no_instances(self):
