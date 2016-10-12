@@ -28,7 +28,6 @@ PRIORITY_NUMBER_ERROR = (
     )
 )
 DUE_DATE_ERROR = '*** Invalid due date'
-DUE_NOW = 'now'
 
 
 def get_list_sorting_key_value(x):
@@ -69,28 +68,24 @@ def valid_priority_number(number):
         return False
 
 
-def get_due_date(due, current_due_date):
+def get_due_date(due_value):
     """
-    :param due: see command.py do_due help docstring
-    :param current_due_date: Datetime object representing current due
-    :return: None (if invalid due), or datetime object for due date
+    :param due_value: see command.py do_due help docstring
+    :return: None (if invalid due_value), or datetime object for due date
     """
-    due = due.strip().lower()
-    if due == DUE_NOW:
-        return datetime.now().replace(microsecond=0)
+    due_value = due_value.strip().lower()
 
-    if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due):
+    if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due_value):
         try:
-            return get_datetime_from_date_only_string(due)
+            return get_datetime_from_date_only_string(due_value)
         except ValueError:
             print(DUE_DATE_ERROR)
             return None
 
-    # todo: be pickier about what's allowed: hour but not happy, e.g.
     m = re.match(
-        r'^([-+]?\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|'
+        r'^(\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|'
         r'm(?:onths?)?|y(?:ears?)?)?$',
-        due
+        due_value
     )
     if not m:
         print(DUE_DATE_ERROR)
@@ -100,7 +95,8 @@ def get_due_date(due, current_due_date):
     unit = m.groups()[1]
 
     if unit in ['h', 'hour', 'hours']:
-        return current_due_date + relativedelta(hours=num)
+        return datetime.now().replace(microsecond=0) + \
+               relativedelta(hours=num)
 
     if unit in ['w', 'week', 'weeks']:
         r = relativedelta(weeks=num)
@@ -111,7 +107,7 @@ def get_due_date(due, current_due_date):
     else:  # default is d|day|days
         r = relativedelta(days=num)
 
-    return (current_due_date + r).replace(
+    return (datetime.now() + r).replace(
         hour=0,
         minute=0,
         second=0,

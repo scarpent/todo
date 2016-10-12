@@ -157,32 +157,29 @@ class Command(cmd.Cmd, object):
         <due value> may be:
             - An actual calendar date in the form of YYYY-MM-DD, which
               will be used as is
-            - "Now", which will set the due date to right now
             - A number and a letter code for units (hours, days, weeks,
-              months, years) by which the current due date of a task
-              will be moved forward or backward. If there is no current
-              due date, today's date will be used before adding or
-              subtracting
+              months, years) by which the due date will be set ahead of
+              right now
 
         Examples:
-            <due>         set due date to:
+            <due>         set due date to/ahead:
             ---------------------------------------------------
             2019-07-18    July 18, 2019
-            now           right now, to the second
-            2d            two days ahead
-            5             five days ahead (default unit = days)
-            5h            five hours ahead
-           -1m            one month earlier
-           +2y            two years ahead (plus is optional)
+            2d            two days
+            5             five days (default unit = days)
+            5h            five hours
+            4w            five weeks
+            3m            three months
+            2y            two years
 
         Notes:
             - For units other than hours, the time will be set to 12am
-            - If 0 is given, the due date will remain the same but the
-              time will be rewound to 0 for units other than hours
+            - If 0 is given, the due date will be set to right now for
+              hours, and today 12am for other units
             - Additional letters may be present and will be ignored,
-              e.g 5days, -2hours, 1month
+              e.g 5days, 2hours, 1month
             - Spaces may be present between number and unit, if quoted,
-              e.g. "1 week", "2 months", "-5 days"
+              e.g. "1 week", "2 months", "5 days"
             - Quotes around the task name are optional (even if spaces)
         """
         views.set_due_date(args)

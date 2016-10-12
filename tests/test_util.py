@@ -5,7 +5,9 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+from datetime import date
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 from unittest import TestCase
 
 import util
@@ -144,169 +146,162 @@ class DueDateTests(Redirector):
     def test_get_due_date_with_date(self):
         self.assertEqual(
             datetime(1997, 6, 1, 0),
-            util.get_due_date('1997-06-01', datetime.today())
+            util.get_due_date('1997-06-01')
         )
         self.assertEqual(
             datetime(1997, 6, 1, 0, 0),
-            util.get_due_date('   1997-06-01   ', datetime.today())
+            util.get_due_date('   1997-06-01   ')
         )
         self.assertEqual(
             datetime(1997, 6, 1),
-            util.get_due_date('1997-6-1', datetime.today())
+            util.get_due_date('1997-6-1')
         )
 
     def test_output_bad_due_date_with_date(self):
-        self.assertIsNone(
-            util.get_due_date('2016-14-36', datetime.today())
-        )
+        self.assertIsNone(util.get_due_date('2016-14-36'))
         self.assertEqual(
             util.DUE_DATE_ERROR,
             self.redirect.getvalue().rstrip()
         )
 
     def test_bad_due_date(self):
-        self.assertIsNone(util.get_due_date('5z', datetime.today()))
+        self.assertIsNone(util.get_due_date('5z'))
         self.assertEqual(
             util.DUE_DATE_ERROR,
             self.redirect.getvalue().rstrip()
         )
-        self.assertIsNone(util.get_due_date('d4', datetime.today()))
+        self.assertIsNone(util.get_due_date('d4'))
+
+    # with hours, time may change between setting due_date and expected
+    # date; using this range will be close enough for our purposes
+    def fuzzy_date_match(self, expected_delta, due_date):
+        expected = datetime.now() + expected_delta
+        self.assertGreater(
+            due_date,
+            expected - relativedelta(minutes=1)
+        )
+        self.assertLess(
+            due_date,
+            expected + relativedelta(minutes=1)
+        )
 
     def test_due_date_hour_delta(self):
-        self.assertEqual(
-            datetime(2015, 4, 7, 16, 5, 22),
-            util.get_due_date('10hour', datetime(2015, 4, 7, 6, 5, 22))
+        self.fuzzy_date_match(
+            relativedelta(hours=10),
+            util.get_due_date('10hour')
         )
-        self.assertEqual(
-            datetime(2015, 4, 7, 16, 5, 22),
-            util.get_due_date('10hours', datetime(2015, 4, 7, 6, 5, 22))
+        self.fuzzy_date_match(
+            relativedelta(hours=25),
+            util.get_due_date('25hours')
         )
-        self.assertEqual(
-            datetime(2015, 4, 8, 7, 5, 22),
-            util.get_due_date('25h', datetime(2015, 4, 7, 6, 5, 22))
+        self.fuzzy_date_match(
+            relativedelta(hours=25),
+            util.get_due_date('25 hours')
         )
-        self.assertEqual(
-            None,
-            util.get_due_date('10houry', datetime(2015, 4, 7, 6, 5, 22))
+        self.fuzzy_date_match(
+            relativedelta(hours=36),
+            util.get_due_date('36h')
         )
+        self.assertEqual(None, util.get_due_date('10houry'))
+
+    @staticmethod
+    def get_expected_datetime(rdelta):
+        return datetime.combine(
+            date.today(),
+            datetime.min.time()
+        ) + rdelta
 
     def test_due_date_day_delta(self):
         self.assertEqual(
-            datetime(2015, 4, 7),
-            util.get_due_date('1d', datetime(2015, 4, 6))
+            self.get_expected_datetime(relativedelta(days=1)),
+            util.get_due_date('1d')
         )
         self.assertEqual(
-            datetime(2015, 4, 14),
-            util.get_due_date('8', datetime(2015, 4, 6))
+            self.get_expected_datetime(relativedelta(days=8)),
+            util.get_due_date('8')
         )
         self.assertEqual(
-            datetime(2015, 4, 7),
-            util.get_due_date('1day', datetime(2015, 4, 6, 5, 4, 3))
+            self.get_expected_datetime(relativedelta(days=49)),
+            util.get_due_date('49days')
         )
         self.assertEqual(
-            datetime(2006, 1, 30),
-            util.get_due_date(
-                '5 days',
-                datetime(2006, 1, 25, 21, 30, 59, 445566)
-            )
+            self.get_expected_datetime(relativedelta(days=7)),
+            util.get_due_date('7 days')
         )
         self.assertEqual(
-            None,
-            util.get_due_date('2da', datetime(2015, 4, 7, 6, 5, 22))
+            self.get_expected_datetime(relativedelta(days=1)),
+            util.get_due_date('1day')
         )
+        self.assertEqual(None, util.get_due_date('2da'))
 
     def test_due_date_week_delta(self):
         self.assertEqual(
-            datetime(2014, 1, 10),
-            util.get_due_date('2w', datetime(2013, 12, 27, 5))
+            self.get_expected_datetime(relativedelta(weeks=2)),
+            util.get_due_date('2w')
         )
         self.assertEqual(
-            datetime(2014, 1, 10),
-            util.get_due_date('2week', datetime(2013, 12, 27, 5))
+            self.get_expected_datetime(relativedelta(weeks=1)),
+            util.get_due_date('1week')
         )
         self.assertEqual(
-            datetime(2014, 1, 10),
-            util.get_due_date('2weeks', datetime(2013, 12, 27, 5))
+            self.get_expected_datetime(relativedelta(weeks=5)),
+            util.get_due_date('5weeks')
         )
 
     def test_due_date_month_delta(self):
         self.assertEqual(
-            datetime(2016, 2, 29),
-            util.get_due_date('1month', datetime(2016, 1, 30))
+            self.get_expected_datetime(relativedelta(months=1)),
+            util.get_due_date('1month')
         )
         self.assertEqual(
-            datetime(2016, 6, 30),
-            util.get_due_date('3months', datetime(2016, 3, 31))
+            self.get_expected_datetime(relativedelta(months=3)),
+            util.get_due_date('3months')
         )
         self.assertEqual(
-            datetime(2018, 3, 15),
-            util.get_due_date('26m', datetime(2016, 1, 15))
+            self.get_expected_datetime(relativedelta(months=26)),
+            util.get_due_date('26m')
         )
-        self.assertEqual(
-            None,
-            util.get_due_date('3monkey', datetime(2001, 3, 18, 3))
-        )
+        self.assertEqual(None, util.get_due_date('3monkey'))
 
     def test_due_date_year_delta(self):
         self.assertEqual(
-            datetime(2999, 12, 31),
-            util.get_due_date('1000y', datetime(1999, 12, 31, 1, 1, 1))
+            self.get_expected_datetime(relativedelta(years=1000)),
+            util.get_due_date('1000y')
         )
         self.assertEqual(
-            datetime(2009, 12, 31),
-            util.get_due_date('10year', datetime(1999, 12, 31, 1, 1, 1))
+            self.get_expected_datetime(relativedelta(years=10)),
+            util.get_due_date('10year')
         )
         self.assertEqual(
-            datetime(2007, 12, 31),
-            util.get_due_date('2years', datetime(2005, 12, 31, 1, 1, 1))
-        )
-
-    def test_due_date_plus_minus_delta(self):
-        self.assertEqual(
-            datetime(2015, 4, 11),
-            util.get_due_date('+5d', datetime(2015, 4, 6))
-        )
-        self.assertEqual(
-            datetime(2015, 4, 1),
-            util.get_due_date('-5d', datetime(2015, 4, 6, 5, 4, 3))
-        )
-        self.assertEqual(
-            datetime(2015, 4, 7, 1, 5),
-            util.get_due_date('-5hour', datetime(2015, 4, 7, 6, 5))
+            self.get_expected_datetime(relativedelta(years=2)),
+            util.get_due_date('2years')
         )
 
     def test_zero(self):
-        self.assertEqual(
-            datetime(2009, 4, 7, 6, 5, 22),
-            util.get_due_date('0h', datetime(2009, 4, 7, 6, 5, 22))
+        self.fuzzy_date_match(
+            relativedelta(hours=0),
+            util.get_due_date('0h')
         )
         self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0d', datetime(2009, 4, 7, 6, 5, 22))
+            self.get_expected_datetime(relativedelta(days=0)),
+            util.get_due_date('0d')
         )
         self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0d', datetime(2009, 4, 7))
+            self.get_expected_datetime(relativedelta(days=0)),
+            util.get_due_date('0')
         )
         self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0', datetime(2009, 4, 7, 6, 5, 22))
+            self.get_expected_datetime(relativedelta(weeks=0)),
+            util.get_due_date('0w')
         )
         self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0w', datetime(2009, 4, 7, 6, 5, 22))
+            self.get_expected_datetime(relativedelta(minutes=0)),
+            util.get_due_date('0m')
         )
         self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0m', datetime(2009, 4, 7, 6, 5, 22))
+            self.get_expected_datetime(relativedelta(years=0)),
+            util.get_due_date('0y')
         )
-        self.assertEqual(
-            datetime(2009, 4, 7),
-            util.get_due_date('0y', datetime(2009, 4, 7, 6, 5, 22))
-        )
-
-    def test_now(self):
-        pass
 
 
 class MiscTests(TestCase):

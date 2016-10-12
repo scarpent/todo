@@ -393,10 +393,7 @@ class DataTests(Redirector):
     def verify_new_task_instance(self, inst, task_name):
         self.assertIsInstance(inst, TaskInstance)
         self.assertEqual(task_name, inst.task.name)
-        self.assertEqual(
-            datetime.combine(date.today(), datetime.min.time()),
-            inst.due
-        )
+        self.assertIsNone(inst.due)
         self.assertIsNone(inst.done)
         self.assertTrue(inst.is_dirty())
         self.verify_open_instance_count(task_name, 0)

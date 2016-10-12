@@ -30,7 +30,6 @@ TASK_NAME_REQUIRED = '*** Task name required'
 TASK_NAME_AND_DUE_REQUIRED = '*** Task name and "due" are both required'
 TASK_REALLY_DELETED = 'REALLY deleted task: '
 TASK_DUE_DATE_SET = 'Due date set: '
-DUE_DATE_LIST_ALL_TASKS = datetime(1970, 1, 1)
 
 
 def add_task(args):
@@ -86,7 +85,7 @@ def set_due_date(args):
         return
 
     task_name = ' '.join(args[:-1])
-    due = args[-1]
+    due_value = args[-1]
 
     try:
         Task.get(name=task_name)
@@ -95,7 +94,7 @@ def set_due_date(args):
         return
 
     open_task_instance = _get_open_task_instance(task_name)
-    due_datetime = util.get_due_date(due, open_task_instance.due)
+    due_datetime = util.get_due_date(due_value)
     if due_datetime:
         open_task_instance.due = due_datetime
         open_task_instance.save()
@@ -241,10 +240,7 @@ def _get_open_task_instance(task_name):
              .order_by(TaskInstance.due.desc()))
 
     if not query:
-        return TaskInstance(
-            task=Task.get(Task.name == task_name),
-            due=datetime.combine(date.today(), datetime.min.time())
-        )
+        return TaskInstance(task=Task.get(Task.name == task_name))
 
     # delete orphaned open task instances
     for inst in query[1:]:
