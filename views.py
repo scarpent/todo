@@ -5,6 +5,7 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import readline
 import shlex
 
 from datetime import datetime
@@ -20,6 +21,7 @@ from models import TaskInstance, Task
 NO_HISTORY = 'No history'
 NO_TASKS = 'No tasks'
 TASK_ADDED = 'Added task: '
+TASK_UPDATED = 'Task updated'
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
 TASK_DELETED = 'Deleted task: '
 TASK_DELETED_ALIASES = ['all', 'deleted']
@@ -53,6 +55,86 @@ def add_task(args):
         print(TASK_ADDED + name)
     except IntegrityError:
         print(TASK_ALREADY_EXISTS)
+
+
+# noinspection PyCompatibility
+def edit_task(task_name):
+    task_name = util.remove_wrapping_quotes(task_name)
+    if not task_name:
+        print(TASK_NAME_REQUIRED)
+        return
+
+    try:
+        task = Task.get(name=task_name)
+    except Task.DoesNotExist:
+        print(TASK_NOT_FOUND)
+        return
+
+    print('Editing task...')
+
+    new_name = task.name
+    while True:
+        new_name = util.remove_wrapping_quotes(
+            raw_input('Name [{default}]: '.format(
+                default=task.name
+            )).strip()
+        )
+
+        if _edit_cancelled(new_name):
+            return
+
+        if new_name == '':
+            new_name = task.name
+
+        if new_name != task.name:
+            if (Task.select().where(Task.name == new_name)).exists():
+                print(TASK_ALREADY_EXISTS)
+                continue
+
+        break
+
+    new_priority = task.priority
+    while True:
+        new_priority = raw_input('Priority [{default}]: '.format(
+            default=task.priority
+        )).strip()
+        if _edit_cancelled(new_priority):
+            return
+        if new_priority == '':
+            new_priority = task.priority
+        if util.valid_priority_number(new_priority):
+            break
+
+    prompt = 'Note'
+    if task.note:
+        # add note to history so we can up-arrow to edit
+        readline.add_history(task.note)
+        prompt += ' [Use existing; "up" to edit; d to delete]'
+    prompt += ': '
+
+    new_note = raw_input(prompt).strip()
+
+    if new_note == 'd':
+        new_note = None
+    elif new_note == '':
+        new_note = task.note
+
+    if _edit_cancelled(new_note):
+        return
+
+    task.name = new_name
+    task.priority = new_priority
+    task.note = new_note
+    task.save()
+    print(TASK_UPDATED)
+
+
+def _edit_cancelled(value):
+    if value == 'q':
+        print('Edit cancelled')
+        return True
+    else:
+        return False
 
 
 def delete_task(task_name):

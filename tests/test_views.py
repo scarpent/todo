@@ -276,6 +276,21 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
+    def test_edit_no_task_name(self):
+        views.edit_task('')
+        self.assertEqual(
+            views.TASK_NAME_REQUIRED,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_edit_nonexistent_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.edit_task('blarney')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+
 
 class DataTests(Redirector):
 

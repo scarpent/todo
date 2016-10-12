@@ -116,8 +116,14 @@ class Command(cmd.Cmd, object):
         views.add_task(args)
 
     def do_edit(self, args):
-        """Edit an existing task (not implemented)"""
-        pass
+        """Edit an existing task
+
+        Syntax: edit <task>
+        """
+        views.edit_task(args)
+
+    def complete_edit(self, text, line, begidx, endidx):
+        return views.get_task_names(starting_with=text)
 
     def do_delete(self, args):
         """Delete a task

@@ -129,6 +129,9 @@ class OutputTests(Redirector):
                 self.redirect.getvalue().rstrip()
             )
 
+    def test_edit(self):
+        pass
+
     def test_syntax_error(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
@@ -230,3 +233,11 @@ class MiscTests(TestCase):
         with Command(args) as interpreter:
             instances = interpreter.complete_done('jus', '', '', '')
             self.assertEqual(['just do it'], instances)
+
+    def test_complete_edit(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            instances = interpreter.complete_edit('c', '', '', '')
+            self.assertEqual(['clip toenails'], instances)
