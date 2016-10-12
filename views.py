@@ -98,7 +98,12 @@ def set_due_date(args):
     if due_datetime:
         open_task_instance.due = due_datetime
         open_task_instance.save()
-        print(TASK_DUE_DATE_SET + util.get_date_string(due_datetime))
+
+        if due_datetime != util.remove_time_from_datetime(due_datetime):
+            due_set = util.get_datetime_string(due_datetime)
+        else:
+            due_set = util.get_date_string(due_datetime)
+        print(TASK_DUE_DATE_SET + due_set)
 
 
 def list_tasks(args):

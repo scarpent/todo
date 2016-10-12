@@ -107,7 +107,11 @@ def get_due_date(due_value):
     else:  # default is d|day|days
         r = relativedelta(days=num)
 
-    return (datetime.now() + r).replace(
+    return remove_time_from_datetime(datetime.now() + r)
+
+
+def remove_time_from_datetime(date_time):
+    return date_time.replace(
         hour=0,
         minute=0,
         second=0,

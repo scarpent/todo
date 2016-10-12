@@ -81,6 +81,33 @@ class FileTests(TestCase):
             views.list_tasks('2')
         self.assertTrue(self.compare_files(expected, actual))
 
+    def test_list_tasks_due_only(self):
+        testfile = 'test_list_due_only'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            views.set_due_date('gather wool 1d')
+            views.list_tasks('due')
+        self.assertTrue(self.compare_files(expected, actual))
+
+    def test_list_tasks_priority_1_and_due_only(self):
+        testfile = 'test_list_priority_1_and_due_only'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            views.set_due_date('clip toenails 0d')
+            views.list_tasks('1 due')
+        self.assertTrue(self.compare_files(expected, actual))
+
+    def test_list_tasks_due_and_priority_1_only(self):
+        testfile = 'test_list_due_and_priority_1_only'
+        expected, actual = self.get_expected_and_actual(testfile)
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            views.set_due_date('clip toenails 0d')
+            views.list_tasks('due 1')
+        self.assertTrue(self.compare_files(expected, actual))
+
     def test_list_sort(self):
         """ higher priority item on same date sorts higher """
         # (even if time of day is later for the lower priority item)
@@ -139,6 +166,33 @@ class OutputTests(Redirector):
             views.TASK_NAME_AND_DUE_REQUIRED,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_set_due_date_hours(self):
+        task_name = 'blarg'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=2)
+            views.set_due_date(task_name + ' 0h')
+            due = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0].due
+
+            self.assertEqual(
+                views.TASK_DUE_DATE_SET + util.get_datetime_string(due),
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_set_due_date_weeks(self):
+        task_name = 'blarg'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=2)
+            views.set_due_date(task_name + ' 0w')
+            expected_datetime = util.get_date_string(
+                util.remove_time_from_datetime(datetime.now())
+            )
+            self.assertEqual(
+                views.TASK_DUE_DATE_SET + expected_datetime,
+                self.redirect.getvalue().rstrip()
+            )
 
     def test_add_duplicate_task(self):
         task_name = 'blah'
