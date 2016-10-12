@@ -16,6 +16,7 @@ import views
 from arghandler import ArgHandler
 from command import Command
 from models import Task
+from models import TaskInstance
 
 from tests.data_setup import create_history_test_data_for_temp_db
 from tests.data_setup import create_test_data_for_temp_db
@@ -24,6 +25,9 @@ from tests.redirector import Redirector
 
 
 class OutputTests(Redirector):
+
+    # more of these kinds of tests in test_views, but let's have a
+    # some where we run through the command interpreter
 
     def test_db_created(self):
         temp_db = 'tests/files/temp.sqlite'
@@ -108,6 +112,23 @@ class OutputTests(Redirector):
                 self.redirect.getvalue().rstrip()
             )
 
+    def test_set_done_date(self):
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        task_name = 'clip toenails'
+        with Command(args) as interpreter:
+            create_test_data_for_temp_db()
+            interpreter.do_done(task_name)
+            done_date = util.get_datetime_string(
+                TaskInstance.select().join(Task).where(
+                    Task.name == task_name
+                )[0].done
+            )
+            self.assertEqual(
+                views.TASK_DONE_DATE_SET + done_date,
+                self.redirect.getvalue().rstrip()
+            )
+
     def test_syntax_error(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])
@@ -131,7 +152,8 @@ class OutputTests(Redirector):
             'edit', 'e',
             'delete', 'del',
             'history', 'h',
-            'due'
+            'due',
+            'done'
         ]
         for c in commands:
             self.reset_redirect()
@@ -155,7 +177,8 @@ class OutputTests(Redirector):
             'help edit', 'help e',
             'help delete', 'help del',
             'help history', 'help h',
-            'help due'
+            'help due',
+            'help done'
         ]
         for c in commands:
             self.reset_redirect()
@@ -199,3 +222,11 @@ class MiscTests(TestCase):
         with Command(args) as interpreter:
             instances = interpreter.complete_due('cli', '', '', '')
             self.assertEqual(['climb mountain'], instances)
+
+    def test_complete_done(self):
+        temp_db = init_temp_database()
+        create_test_data_for_temp_db()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            instances = interpreter.complete_done('jus', '', '', '')
+            self.assertEqual(['just do it'], instances)

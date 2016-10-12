@@ -187,6 +187,19 @@ class Command(cmd.Cmd, object):
     def complete_due(self, text, line, begidx, endidx):
         return views.get_task_names(starting_with=text)
 
+    def do_done(self, args):
+        """Set done date of open task instance
+
+        Syntax: done <task>
+
+        Sets the done date to right now. If no open task instances,
+        one will be created and then set to done.
+        """
+        views.set_done_date(args)
+
+    def complete_done(self, text, line, begidx, endidx):
+        return views.get_task_names(starting_with=text)
+
     def do_quit(self, arg):
         """Exit the program"""
         return True

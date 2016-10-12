@@ -145,6 +145,7 @@ class FileTests(TestCase):
             views.list_task_instances('shave yak')
         self.assertTrue(self.compare_files(expected, actual))
 
+
 class OutputTests(Redirector):
 
     def test_list_bad_number(self):
@@ -257,6 +258,21 @@ class OutputTests(Redirector):
         # quoted so is parsed as task 'two' instead
         self.assertEqual(
             views.TASK_NOT_FOUND + ': two',
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_set_done_date_no_task_name(self):
+        views.set_done_date('')
+        self.assertEqual(
+            views.TASK_NAME_REQUIRED,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_set_done_date_on_nonexistent_task(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.set_done_date('blarney')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
             self.redirect.getvalue().rstrip()
         )
 
