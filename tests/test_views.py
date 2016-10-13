@@ -8,6 +8,8 @@ from __future__ import unicode_literals
 from datetime import date
 from datetime import datetime
 
+from unittest import TestCase
+
 from playhouse.test_utils import test_database
 from playhouse.test_utils import count_queries
 
@@ -498,3 +500,159 @@ class DataTests(Redirector):
                     TaskInstance.done >> None
                   ))
         self.assertEqual(expected_count, len(query))
+
+
+class MockRawInput(TestCase):
+    responses = []
+
+    def mock_raw_input(self, prompt):
+        assert self.responses
+        response = self.responses.pop(0)
+        print(prompt + response)
+        return response
+
+    def setUp(self):
+        super(MockRawInput, self).setUp()
+        self.save_raw_input = raw_input
+        views.raw_input = self.mock_raw_input
+
+    def tearDown(self):
+        super(MockRawInput, self).tearDown()
+        views.raw_input = self.save_raw_input
+
+
+class EditTests(MockRawInput, Redirector):
+
+    def test_edit_cancelled(self):
+        self.assertTrue(views._edit_cancelled('   q   '))
+        self.assertEqual(
+            views.EDIT_CANCELLED,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_edit_cancelled_not(self):
+        self.assertFalse(views._edit_cancelled('   qewl   '))
+        self.assertEqual('', self.redirect.getvalue().rstrip())
+
+    def test_get_response_default(self):
+        prompt = 'prompt!'
+        old_value = 'mint'
+        self.responses = ['']
+        self.assertEqual(
+            old_value,
+            views._get_response(prompt, old_value)
+        )
+        self.assertEqual(
+            prompt + ' [' + old_value + ']: \n',
+            self.redirect.getvalue()
+        )
+
+    def test_get_response_new_value(self):
+        prompt = 'prompt!'
+        old_value = 'mint'
+        new_value = 'peppermint'
+        self.responses = [new_value]
+        self.assertEqual(
+            new_value,
+            views._get_response(prompt, old_value)
+        )
+        self.assertEqual(
+            prompt + ' [' + old_value + ']: ' + new_value + '\n',
+            self.redirect.getvalue()
+        )
+
+    def test_get_response_alternate_prompt(self):
+        prompt = 'teleprompt'
+        old_value = 'gum of bubble'
+        alt_prompt = 'chewy'
+        self.responses = ['']
+        self.assertEqual(
+            old_value,
+            views._get_response(prompt, old_value, alt_prompt)
+        )
+        self.assertEqual(
+            prompt + ' [' + alt_prompt + ']: \n',
+            self.redirect.getvalue()
+        )
+
+    def test_get_response_none_old_value(self):
+        prompt = 'snurgle'
+        old_value = None
+        new_value = 'blurgle'
+        self.responses = [new_value]
+        self.assertEqual(
+            new_value,
+            views._get_response(prompt, old_value)
+        )
+        self.assertEqual(
+            prompt + ': ' + new_value + '\n',
+            self.redirect.getvalue()
+        )
+
+    def test_get_response_nothing(self):
+        self.responses = ['']
+        self.assertEqual('', views._get_response())
+        self.assertEqual(': \n', self.redirect.getvalue())
+
+
+class EditTestsIO(MockRawInput, OutputFileTester):
+
+    def test_edit(self):
+        self.init_test('test_edit')
+        task_old_name = 'gather wool'
+        task_new_name = 'distribute wool'
+        priority_new = 3
+        note_new = 'forsooth'
+        self.responses = [task_new_name, str(priority_new), note_new]
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            task_before = Task.get(Task.name == task_old_name)
+            self.assertEqual(1, task_before.priority)
+            self.assertEqual('woolly mammoth', task_before.note)
+
+            views.edit_task(task_old_name)
+            task_after = Task.get(Task.name == task_new_name)
+
+        self.assertEqual(priority_new, task_after.priority)
+        self.assertEqual(note_new, task_after.note)
+        with self.assertRaises(Task.DoesNotExist):
+            Task.get(Task.name == task_old_name)
+        self.conclude_test()
+
+    def test_edit_cancels(self):
+        self.init_test('test_edit_cancels')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            self.responses = ['q']
+            views.edit_task('sharpen pencils')
+            self.responses = ['', 'q']
+            views.edit_task('sharpen pencils')
+            self.responses = ['', '', 'q']
+            views.edit_task('sharpen pencils')
+        self.conclude_test()
+
+    def test_edit_validation_errors(self):
+        self.init_test('test_edit_validation_errors')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            self.responses = ['gather wool', 'q']
+            views.edit_task('sharpen pencils')  # existing name
+            self.responses = ['', 'x', 'q']
+            views.edit_task('sharpen pencils')  # invalid priority
+        self.conclude_test()
+
+    def test_edit_delete_note(self):
+        self.init_test('test_edit_delete_note')
+        task_name = 'just do it'
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            task_before = Task.get(Task.name == task_name)
+            self.responses = ['', '', 'd']
+            views.edit_task(task_name)
+            task_after = Task.get(Task.name == task_name)
+        self.assertEqual(task_after.name, task_before.name)
+        self.assertEqual(task_after.priority, task_before.priority)
+        self.assertNotEqual(task_after.note, task_before.note)
+        self.assertEqual(None, task_after.note)
+        self.conclude_test()
+

@@ -18,6 +18,7 @@ from models import *
 from models import TaskInstance, Task
 
 
+EDIT_CANCELLED = 'Edit cancelled'
 NO_HISTORY = 'No history'
 NO_TASKS = 'No tasks'
 TASK_ADDED = 'Added task: '
@@ -57,7 +58,6 @@ def add_task(args):
         print(TASK_ALREADY_EXISTS)
 
 
-# noinspection PyCompatibility
 def edit_task(task_name):
     task_name = util.remove_wrapping_quotes(task_name)
     if not task_name:
@@ -70,68 +70,73 @@ def edit_task(task_name):
         print(TASK_NOT_FOUND)
         return
 
-    print('Editing task...')
+    print("Editing task ('q' to cancel)...")
 
-    new_name = task.name
+    new_name = None
     while True:
-        new_name = util.remove_wrapping_quotes(
-            raw_input('Name [{default}]: '.format(
-                default=task.name
-            )).strip()
-        )
-
+        new_name = _get_response('Name', task.name)
         if _edit_cancelled(new_name):
             return
-
-        if new_name == '':
-            new_name = task.name
-
-        if new_name != task.name:
+        elif new_name != task.name:
             if (Task.select().where(Task.name == new_name)).exists():
                 print(TASK_ALREADY_EXISTS)
                 continue
-
         break
 
-    new_priority = task.priority
+    new_priority = None
     while True:
-        new_priority = raw_input('Priority [{default}]: '.format(
-            default=task.priority
-        )).strip()
+        new_priority = _get_response('Priority', task.priority)
         if _edit_cancelled(new_priority):
             return
-        if new_priority == '':
-            new_priority = task.priority
-        if util.valid_priority_number(new_priority):
+        elif util.valid_priority_number(new_priority):
             break
 
-    prompt = 'Note'
     if task.note:
         # add note to history so we can up-arrow to edit
         readline.add_history(task.note)
-        prompt += ' [Use existing; "up" to edit; d to delete]'
-    prompt += ': '
 
-    new_note = raw_input(prompt).strip()
-
-    if new_note == 'd':
-        new_note = None
-    elif new_note == '':
-        new_note = task.note
-
+    new_note = _get_response(
+        prompt='Note',
+        prompt_default="Use existing; {up} to edit; 'd' to delete",
+        old_value=task.note
+    )
     if _edit_cancelled(new_note):
         return
+    elif new_note == 'd':
+        new_note = None
 
     task.name = new_name
-    task.priority = new_priority
+    task.priority = int(new_priority)
     task.note = new_note
     task.save()
     print(TASK_UPDATED)
 
 
+# noinspection PyCompatibility
+def _get_response(prompt='', old_value='', prompt_default=None):
+    if old_value:
+        default = ' [{value}]'.format(
+            value=old_value if not prompt_default else prompt_default
+        )
+    else:
+        default = ''
+
+    response = util.remove_wrapping_quotes(
+        raw_input('{prompt}{default}: '.format(
+            prompt=prompt,
+            default=default
+        )).strip()
+    )
+
+    if response == '':
+        response = old_value
+
+    return response
+
+
 def _edit_cancelled(value):
-    if value == 'q':
-        print('Edit cancelled')
+    if str(value).strip() == 'q':
+        print(EDIT_CANCELLED)
         return True
     else:
         return False

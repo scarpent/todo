@@ -1,0 +1,11 @@
+Editing task ('q' to cancel)...
+Name [sharpen pencils]: gather wool
+*** There is already a task with that name
+Name [sharpen pencils]: q
+Edit cancelled
+Editing task ('q' to cancel)...
+Name [sharpen pencils]: 
+Priority [2]: x
+*** Priority must be a whole number between 1 and 4, or 9
+Priority [2]: q
+Edit cancelled
