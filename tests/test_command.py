@@ -21,7 +21,7 @@ from models import TaskInstance
 from tests.data_setup import create_history_test_data_for_temp_db
 from tests.data_setup import create_test_data_for_temp_db
 from tests.data_setup import init_temp_database
-from tests.redirector import Redirector
+from tests.helpers import Redirector
 
 
 class OutputTests(Redirector):

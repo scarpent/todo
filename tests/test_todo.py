@@ -8,7 +8,7 @@ from __future__ import unicode_literals
 import todo
 import views
 
-from tests.redirector import Redirector
+from tests.helpers import Redirector
 from tests.data_setup import init_temp_database
 from tests.data_setup import create_test_data
 from tests.data_setup import create_history_test_data

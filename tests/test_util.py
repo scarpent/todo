@@ -12,7 +12,7 @@ from unittest import TestCase
 
 import util
 
-from tests.redirector import Redirector
+from tests.helpers import Redirector
 
 
 class DateTests(TestCase):
