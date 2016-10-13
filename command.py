@@ -125,6 +125,9 @@ class Command(cmd.Cmd, object):
     def complete_edit(self, text, line, begidx, endidx):
         return views.get_task_names(starting_with=text)
 
+    # alias command completion workaround
+    complete_e = complete_edit
+
     def do_delete(self, args):
         """Delete a task
 
