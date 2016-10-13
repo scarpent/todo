@@ -623,11 +623,11 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         self.init_test('test_edit_cancels')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            self.responses = ['q']
+            self.responses = ['q']  # quit on name
             views.edit_task('sharpen pencils')
-            self.responses = ['', 'q']
+            self.responses = ['', 'q']  # quit on priority
             views.edit_task('sharpen pencils')
-            self.responses = ['', '', 'q']
+            self.responses = ['', '', 'q']  # quit on note
             views.edit_task('sharpen pencils')
         self.conclude_test()
 
@@ -635,10 +635,10 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         self.init_test('test_edit_validation_errors')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
-            self.responses = ['gather wool', 'q']
-            views.edit_task('sharpen pencils')  # existing name
-            self.responses = ['', 'x', 'q']
-            views.edit_task('sharpen pencils')  # invalid priority
+            self.responses = ['gather wool', 'q']  # existing name
+            views.edit_task('sharpen pencils')
+            self.responses = ['', 'x', 'q']  # invalid priority
+            views.edit_task('sharpen pencils')
         self.conclude_test()
 
     def test_edit_delete_note(self):
