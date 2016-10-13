@@ -19,7 +19,7 @@ from models import TaskInstance
 
 from tests.data_setup import create_history_test_data
 from tests.data_setup import create_test_data
-from tests.data_setup import create_sort_test_data_for_temp_db
+from tests.data_setup import create_sort_test_data
 from tests.data_setup import test_db
 from tests.helpers import OutputFileTester
 from tests.helpers import Redirector
@@ -28,95 +28,83 @@ from tests.helpers import Redirector
 class FileTests(OutputFileTester):
 
     def test_list_tasks(self):
-        testfile = 'test_list'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             views.list_tasks(None)
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_list_with_deleted_items(self):
-        testfile = 'test_list_with_deleted'
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             for alias in views.TASK_DELETED_ALIASES:
-                expected, actual = self.get_expected_and_actual(
-                    testfile
-                )
+                self.init_test('test_list_with_deleted')
                 views.list_tasks(alias)
-                self.compare_files(expected, actual)
+                self.conclude_test()
 
     def test_list_priority_2(self):
-        testfile = 'test_list_priority_2'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_priority_2')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             views.list_tasks('2')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_list_tasks_due_only(self):
-        testfile = 'test_list_due_only'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_due_only')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             views.set_due_date('gather wool 2345-01-23')
             views.list_tasks('due')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_list_tasks_priority_1_and_due_only(self):
-        testfile = 'test_list_priority_1_and_due_only'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_priority_1_and_due_only')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             views.set_due_date('clip toenails 1987-03-28')
             views.list_tasks('1 due')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_list_tasks_due_and_priority_1_only(self):
-        testfile = 'test_list_due_and_priority_1_only'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_due_and_priority_1_only')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             views.set_due_date('clip toenails 1993-07-18')
             views.list_tasks('due 1')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_list_sort(self):
         """ higher priority item on same date sorts higher """
         # (even if time of day is later for the lower priority item)
-        testfile = 'test_list_sort'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_sort')
         with test_database(test_db, (Task, TaskInstance)):
-            create_sort_test_data_for_temp_db()
+            create_sort_test_data()
             views.list_tasks(None)
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_sorted_listing_with_deleted_items(self):
-        testfile = 'test_list_sorted_with_deletes'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_list_sorted_with_deletes')
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             task = Task.get(name='sharpen pencils')
             task.priority = util.PRIORITY_DELETED
             task.save()
             views.list_tasks(str(util.PRIORITY_DELETED))
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_history_with_open_task(self):
-        testfile = 'test_history'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_history')
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
             views.list_task_instances('climb mountain')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
     def test_history_with_no_open_task(self):
-        testfile = 'test_history_no_open_task'
-        expected, actual = self.get_expected_and_actual(testfile)
+        self.init_test('test_history_no_open_task')
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
             views.list_task_instances('shave yak')
-        self.compare_files(expected, actual)
+        self.conclude_test()
 
 
 class OutputTests(Redirector):
