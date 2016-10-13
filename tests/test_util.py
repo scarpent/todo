@@ -202,6 +202,10 @@ class DueDateTests(Redirector):
             relativedelta(hours=36),
             util.get_due_date('36h')
         )
+        self.fuzzy_date_match(
+            relativedelta(hours=2),
+            util.get_due_date('+2hour')
+        )
         self.assertEqual(None, util.get_due_date('10houry'))
 
     @staticmethod

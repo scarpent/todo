@@ -83,7 +83,7 @@ def get_due_date(due_value):
             return None
 
     m = re.match(
-        r'^(\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|'
+        r'^[+]?(\d+)\s*(h(?:ours?)?|d(?:ays?)?|w(?:eeks?)?|'
         r'm(?:onths?)?|y(?:ears?)?)?$',
         due_value
     )
