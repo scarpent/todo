@@ -1,7 +1,8 @@
-p due        task                           note
-- ---        ----                           ----
-4 2016-10-07 just do it                     bo knows
-1            clip toenails                  
-1            gather wool                    woolly mammoth
-9 2016-10-03 sharpen pencils                pencil note
-9 2016-08-01 goner                          
+p  due         task                            note
+--------------------------------------------------------------------------------
+4  2016-10-07  just do it                      bo knows
+1              clip toenails                   
+1              gather wool                     woolly mammoth
+9  2016-10-03  sharpen pencils                 pencil note
+9  2016-08-01  goner                           
+--------------------------------------------------------------------------------

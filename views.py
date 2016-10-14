@@ -124,7 +124,7 @@ def _edit_task_history(task_name):
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
         return
-    
+
     print('edit history of task: ' + task_name +
           '\n(history editing feature work in progress...)')
 
@@ -275,7 +275,8 @@ def list_task_instances(task_name):
 
 def _print_task_list(tasks):
     _print_task('p', 'due', 'task', 'note')
-    _print_task('-', '---', '----', '----')
+    separator = '-' * 80
+    print(separator)
     for task in tasks:
         _print_task(
             priority=task['priority'],
@@ -283,11 +284,12 @@ def _print_task_list(tasks):
             name=task['name'],
             note=task['note']
         )
+    print(separator)
 
 
 def _print_task(priority='', due='', name='', note=None):
     note = '' if not note else note
-    print('{priority:1} {due:10} {name:30} {note}'.format(
+    print('{priority:1}  {due:10}  {name:30}  {note}'.format(
         priority=priority,
         due=due,
         name=name,
@@ -296,18 +298,24 @@ def _print_task(priority='', due='', name='', note=None):
 
 
 def _print_task_instance_list(instances):
-    _print_task_instance('done', 'note')
-    _print_task_instance('----', '----')
+    _print_task_instance('#', 'done', 'note')
+    separator = '~' * 50
+    print(separator)
+    num = 0
     for inst in instances:
+        num += 1
         _print_task_instance(
+            num=str(num),
             done=util.get_date_string(inst['done']),
             note=inst['note']
         )
+    print(separator)
 
 
-def _print_task_instance(done='', note=None):
+def _print_task_instance(num='', done='', note=None):
     note = '' if not note else note
-    print('{done:10} {note}'.format(
+    print('{num:>3}  {done:10}  {note}'.format(
+        num=num,
         done=done,
         note=note
     ))
