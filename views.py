@@ -91,25 +91,15 @@ def _edit_task(task):
 
     new_priority = None
     while True:
-        new_priority = _get_response('Priority', task.priority)
+        new_priority = _get_response('Priority', str(task.priority))
         if _edit_cancelled(new_priority):
             return
         elif util.valid_priority_number(new_priority):
             break
 
-    if task.note:
-        # add note to history so we can up-arrow to edit
-        readline.add_history(task.note)
-
-    new_note = _get_response(
-        prompt='Note',
-        prompt_default="Use existing; {up} to edit; 'd' to delete",
-        old_value=task.note
-    )
+    new_note = _get_note(task.note)
     if _edit_cancelled(new_note):
         return
-    elif new_note == 'd':
-        new_note = None
 
     task.name = new_name
     task.priority = int(new_priority)
@@ -118,15 +108,52 @@ def _edit_task(task):
     print(TASK_UPDATED)
 
 
+def _get_note(note):
+    if note:
+        # add note to history so we can up-arrow to edit
+        readline.add_history(note)
+
+    new_note = _get_response(
+        prompt='Note',
+        prompt_default="Use existing; {up} to edit; 'd' to delete",
+        old_value=note
+    )
+
+    if new_note == 'd':
+        new_note = None
+
+    return new_note
+
+
 def _edit_task_history(task_name):
-    try:
-        Task.get(name=task_name)
-    except Task.DoesNotExist:
-        print(TASK_NOT_FOUND)
+    instances = list_task_instances(task_name)
+    if not instances:
         return
 
-    print('edit history of task: ' + task_name +
-          '\n(history editing feature work in progress...)')
+    print("Editing task history ('q' to cancel)...")
+
+    task_num = None
+    while True:
+        num_items = len(instances)
+        task_num = _get_response(
+            'Number (1-{total})'.format(
+                total=num_items
+            ),
+            str(num_items)
+        )
+
+        if _edit_cancelled(task_num):
+            return
+        elif util.valid_history_number(task_num, num_items):
+            break
+
+    # task_instance =
+    #
+    # new_note = _get_note(task.note)
+    # if _edit_cancelled(new_note):
+    #     return
+
+    print('task #: ' + task_num)
 
 
 # noinspection PyCompatibility
@@ -258,19 +285,22 @@ def list_tasks(args):
         print(NO_TASKS)
 
 
+# aka history
 def list_task_instances(task_name):
     task_name = util.remove_wrapping_quotes(task_name)
     try:
         Task.get(name=task_name)
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
-        return
+        return None
 
     instances = _get_task_instance_list(task_name)
     if instances:
         _print_task_instance_list(instances)
+        return instances
     else:
         print(NO_HISTORY)
+        return None
 
 
 def _print_task_list(tasks):
@@ -365,13 +395,18 @@ def _get_task_instance_list(task_name):
 
     instances = []
     for inst in query:
-        instances.append({'done': inst.done, 'note': inst.note})
+        instances.append({
+            'id': inst.id,
+            'done': inst.done,
+            'note': inst.note,
+         })
 
     open_inst = _get_open_task_instance(task_name)
     # only want to show if there's a note;
     # otherwise would just be an empty line
     if open_inst.note:
         instances.append({
+            'id': open_inst.id,
             'done': open_inst.done,
             'note': open_inst.note,
         })

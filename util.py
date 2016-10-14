@@ -28,6 +28,8 @@ PRIORITY_NUMBER_ERROR = (
     )
 )
 DUE_DATE_ERROR = '*** Invalid due date'
+HISTORY_NUMBER_ERROR = '*** Invalid number'
+HISTORY_CHOICE_ERROR = '*** Invalid choice'
 
 
 def get_list_sorting_key_value(x):
@@ -65,6 +67,19 @@ def valid_priority_number(number):
             raise ValueError
     except ValueError:
         print(PRIORITY_NUMBER_ERROR)
+        return False
+
+
+def valid_history_number(number, number_of_items):
+    try:
+        number = int(number)
+        if 0 < number <= number_of_items:
+            return True
+        else:
+            print(HISTORY_CHOICE_ERROR)
+            return False
+    except ValueError:
+        print(HISTORY_NUMBER_ERROR)
         return False
 
 

@@ -344,11 +344,11 @@ class DataTests(Redirector):
 
     def test_get_task_instance_list_with_open_instance(self):
         expected = [
-            {'note': None, 'done': datetime(2012, 12, 4)},
-            {'note': 'was rocky', 'done': datetime(2014, 8, 3)},
-            {'note': None, 'done': datetime(2015, 10, 30)},
-            {'note': 'phew!', 'done': datetime(2016, 4, 10)},
-            {'note': 'get back to it', 'done': None},
+            {'id': 3, 'note': None, 'done': datetime(2012, 12, 4)},
+            {'id': 4, 'note': 'was rocky', 'done': datetime(2014, 8, 3)},
+            {'id': 2, 'note': None, 'done': datetime(2015, 10, 30)},
+            {'id': 1, 'note': 'phew!', 'done': datetime(2016, 4, 10)},
+            {'id': 5, 'note': 'get back to it', 'done': None},
         ]
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
@@ -358,9 +358,11 @@ class DataTests(Redirector):
             )
 
     def test_get_task_instance_list_with_no_open(self):
-        expected = [
-            {'note': 'yakkety sax', 'done': datetime(1976, 3, 4)}
-        ]
+        expected = [{
+            'note': 'yakkety sax',
+            'done': datetime(1976, 3, 4),
+            'id': 6,
+        }]
         with test_database(test_db, (Task, TaskInstance)):
             create_history_test_data()
             self.assertEqual(
