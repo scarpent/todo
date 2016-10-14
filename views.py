@@ -58,17 +58,23 @@ def add_task(args):
         print(TASK_ALREADY_EXISTS)
 
 
-def edit_task(task_name):
-    task_name = util.remove_wrapping_quotes(task_name)
-    if not task_name:
+def edit_task_or_history(args):
+    args = shlex.split(args if args else '')
+
+    if not args:
         print(TASK_NAME_REQUIRED)
+        return
+    elif len(args) > 1 and args[0] == 'history':
+        _edit_task_history(' '.join(args[1:]))
         return
 
     try:
-        task = Task.get(name=task_name)
+        _edit_task(Task.get(Task.name == ' '.join(args)))
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
-        return
+
+
+def _edit_task(task):
 
     print("Editing task ('q' to cancel)...")
 
@@ -110,6 +116,17 @@ def edit_task(task_name):
     task.note = new_note
     task.save()
     print(TASK_UPDATED)
+
+
+def _edit_task_history(task_name):
+    try:
+        Task.get(name=task_name)
+    except Task.DoesNotExist:
+        print(TASK_NOT_FOUND)
+        return
+    
+    print('edit history of task: ' + task_name +
+          '\n(history editing feature work in progress...)')
 
 
 # noinspection PyCompatibility

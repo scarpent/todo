@@ -116,11 +116,12 @@ class Command(cmd.Cmd, object):
         views.add_task(args)
 
     def do_edit(self, args):
-        """Edit an existing task
+        """Edit an existing task or task history
 
         Syntax: edit <task>
+                edit history <task>
         """
-        views.edit_task(args)
+        views.edit_task_or_history(args)
 
     def complete_edit(self, text, line, begidx, endidx):
         return views.get_task_names(starting_with=text)

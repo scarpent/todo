@@ -240,19 +240,45 @@ class OutputTests(Redirector):
         )
 
     def test_edit_no_task_name(self):
-        views.edit_task('')
+        views.edit_task_or_history('')
         self.assertEqual(
             views.TASK_NAME_REQUIRED,
             self.redirect.getvalue().rstrip()
         )
 
-    def test_edit_nonexistent_task(self):
+    def test_edit_task_nonexistent(self):
         with test_database(test_db, (Task, TaskInstance)):
-            views.edit_task('blarney')
-        self.assertEqual(
-            views.TASK_NOT_FOUND,
-            self.redirect.getvalue().rstrip()
-        )
+            views.edit_task_or_history('blarney')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            # history by itself could be a task if existed
+            views.edit_task_or_history('history')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_edit_task_history_task_nonexistent(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.edit_task_or_history('history blarney')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            views.edit_task_or_history('history history')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_edit_task_name_instead_of_object(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            with self.assertRaises(AttributeError):
+                views._edit_task('blarney')
 
 
 class DataTests(Redirector):
@@ -610,7 +636,7 @@ class EditTestsIO(MockRawInput, OutputFileTester):
             self.assertEqual(1, task_before.priority)
             self.assertEqual('woolly mammoth', task_before.note)
 
-            views.edit_task(task_old_name)
+            views.edit_task_or_history(task_old_name)
             task_after = Task.get(Task.name == task_new_name)
 
         self.assertEqual(priority_new, task_after.priority)
@@ -624,11 +650,11 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             self.responses = ['q']  # quit on name
-            views.edit_task('sharpen pencils')
+            views.edit_task_or_history('sharpen pencils')
             self.responses = ['', 'q']  # quit on priority
-            views.edit_task('sharpen pencils')
+            views.edit_task_or_history('sharpen pencils')
             self.responses = ['', '', 'q']  # quit on note
-            views.edit_task('sharpen pencils')
+            views.edit_task_or_history('sharpen pencils')
         self.conclude_test()
 
     def test_edit_validation_errors(self):
@@ -636,9 +662,9 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         with test_database(test_db, (Task, TaskInstance)):
             create_test_data()
             self.responses = ['gather wool', 'q']  # existing name
-            views.edit_task('sharpen pencils')
+            views.edit_task_or_history('sharpen pencils')
             self.responses = ['', 'x', 'q']  # invalid priority
-            views.edit_task('sharpen pencils')
+            views.edit_task_or_history('sharpen pencils')
         self.conclude_test()
 
     def test_edit_delete_note(self):
@@ -648,7 +674,7 @@ class EditTestsIO(MockRawInput, OutputFileTester):
             create_test_data()
             task_before = Task.get(Task.name == task_name)
             self.responses = ['', '', 'd']
-            views.edit_task(task_name)
+            views.edit_task_or_history(task_name)
             task_after = Task.get(Task.name == task_name)
         self.assertEqual(task_after.name, task_before.name)
         self.assertEqual(task_after.priority, task_before.priority)
