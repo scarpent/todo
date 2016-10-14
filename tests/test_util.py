@@ -140,6 +140,28 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
+    def test_valid_history_number(self):
+        self.assertTrue(util.valid_history_number(1, 1))
+        self.assertTrue(util.valid_history_number(1, 2))
+        self.assertTrue(util.valid_history_number('3', 4))
+
+    def test_invalid_history_number(self):
+        self.assertFalse(util.valid_history_number('a', 4))
+        self.assertEqual(
+            util.HISTORY_NUMBER_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_invalid_history_number_choice(self):
+        self.assertFalse(util.valid_history_number(5, 4))
+        self.assertEqual(
+            util.HISTORY_CHOICE_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+        self.assertFalse(util.valid_history_number(0, 1))
+        self.assertFalse(util.valid_history_number('-1', 3))
+        self.assertFalse(util.valid_history_number('87', 50))
+
 
 class DueDateTests(Redirector):
 
