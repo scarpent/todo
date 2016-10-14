@@ -23,9 +23,11 @@ NO_HISTORY = 'No history'
 NO_TASKS = 'No tasks'
 TASK_ADDED = 'Added task: '
 TASK_UPDATED = 'Task updated'
+TASK_UPDATED_HISTORY = 'Task history updated'
 TASK_ALREADY_EXISTS = '*** There is already a task with that name'
 TASK_DELETED = 'Deleted task: '
 TASK_DELETED_ALIASES = ['all', 'deleted']
+TASK_DELETED_HISTORY = 'Deleted history: '
 TASK_DUE_DATE_SET = 'Due date set: '
 TASK_DONE_DATE_SET = 'Done! '
 TASK_NAME_AND_DUE_REQUIRED = '*** Task name and "due" are both required'
@@ -72,6 +74,7 @@ def edit_task_or_history(args):
         _edit_task(Task.get(Task.name == ' '.join(args)))
     except Task.DoesNotExist:
         print(TASK_NOT_FOUND)
+        return
 
 
 def _edit_task(task):
@@ -108,23 +111,6 @@ def _edit_task(task):
     print(TASK_UPDATED)
 
 
-def _get_note(note):
-    if note:
-        # add note to history so we can up-arrow to edit
-        readline.add_history(note)
-
-    new_note = _get_response(
-        prompt='Note',
-        prompt_default="Use existing; {up} to edit; 'd' to delete",
-        old_value=note
-    )
-
-    if new_note == 'd':
-        new_note = None
-
-    return new_note
-
-
 def _edit_task_history(task_name):
     instances = list_task_instances(task_name)
     if not instances:
@@ -147,13 +133,43 @@ def _edit_task_history(task_name):
         elif util.valid_history_number(task_num, num_items):
             break
 
-    # task_instance =
-    #
-    # new_note = _get_note(task.note)
-    # if _edit_cancelled(new_note):
-    #     return
+    task_instance = TaskInstance.get(
+        TaskInstance.id == instances[int(task_num) - 1]['id']
+    )
 
-    print('task #: ' + task_num)
+    # can only set done date on done tasks;
+    # must use "done" command to actually close them
+    if task_instance.done:
+        while True:
+            date_str = util.get_date_string(task_instance.done)
+            new_done_date = _get_response(
+                prompt='Done (YYYY-MM-DD)',
+                prompt_default=date_str + "; 'DELETE' to remove entry",
+                old_value=date_str
+            )
+            if _edit_cancelled(new_done_date):
+                return
+            elif new_done_date == 'DELETE':
+                task_instance.delete_instance()
+                print(TASK_DELETED_HISTORY + date_str)
+                return
+
+            try:
+                new_done_date = util.get_datetime_from_date_only_string(
+                    new_done_date
+                )
+                task_instance.done = new_done_date
+                break
+            except ValueError:
+                print(util.DATE_ERROR)
+
+    new_note = _get_note(task_instance.note)
+    if _edit_cancelled(new_note):
+        return
+
+    task_instance.note = new_note
+    task_instance.save()
+    print(TASK_UPDATED_HISTORY)
 
 
 # noinspection PyCompatibility
@@ -176,6 +192,23 @@ def _get_response(prompt='', old_value='', prompt_default=None):
         response = old_value
 
     return response
+
+
+def _get_note(note):
+    if note:
+        # add note to history so we can up-arrow to edit
+        readline.add_history(note)
+
+    new_note = _get_response(
+        prompt='Note',
+        prompt_default="Use existing; {up} to edit; 'd' to delete",
+        old_value=note
+    )
+
+    if new_note == 'd':
+        new_note = None
+
+    return new_note
 
 
 def _edit_cancelled(value):
@@ -346,7 +379,7 @@ def _print_task_instance(num='', done='', note=None):
     note = '' if not note else note
     print('{num:>3}  {done:10}  {note}'.format(
         num=num,
-        done=done,
+        done=done if done else '(open)',
         note=note
     ))
 
@@ -402,9 +435,7 @@ def _get_task_instance_list(task_name):
          })
 
     open_inst = _get_open_task_instance(task_name)
-    # only want to show if there's a note;
-    # otherwise would just be an empty line
-    if open_inst.note:
+    if open_inst.id is not None:  # existing open instance
         instances.append({
             'id': open_inst.id,
             'done': open_inst.done,

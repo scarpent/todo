@@ -345,7 +345,8 @@ class DataTests(Redirector):
     def test_get_task_instance_list_with_open_instance(self):
         expected = [
             {'id': 3, 'note': None, 'done': datetime(2012, 12, 4)},
-            {'id': 4, 'note': 'was rocky', 'done': datetime(2014, 8, 3)},
+            {'id': 4, 'note': 'was rocky',
+             'done': datetime(2014, 8, 3)},
             {'id': 2, 'note': None, 'done': datetime(2015, 10, 30)},
             {'id': 1, 'note': 'phew!', 'done': datetime(2016, 4, 10)},
             {'id': 5, 'note': 'get back to it', 'done': None},
@@ -683,4 +684,3 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         self.assertNotEqual(task_after.note, task_before.note)
         self.assertEqual(None, task_after.note)
         self.conclude_test()
-

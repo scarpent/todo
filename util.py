@@ -27,7 +27,7 @@ PRIORITY_NUMBER_ERROR = (
         deleted=PRIORITY_DELETED
     )
 )
-DUE_DATE_ERROR = '*** Invalid due date'
+DATE_ERROR = '*** Invalid date'
 HISTORY_NUMBER_ERROR = '*** Invalid number'
 HISTORY_CHOICE_ERROR = '*** Invalid choice'
 
@@ -94,7 +94,7 @@ def get_due_date(due_value):
         try:
             return get_datetime_from_date_only_string(due_value)
         except ValueError:
-            print(DUE_DATE_ERROR)
+            print(DATE_ERROR)
             return None
 
     m = re.match(
@@ -103,7 +103,7 @@ def get_due_date(due_value):
         due_value
     )
     if not m:
-        print(DUE_DATE_ERROR)
+        print(DATE_ERROR)
         return None
 
     num = int(m.groups()[0])

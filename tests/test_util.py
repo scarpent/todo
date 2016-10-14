@@ -160,14 +160,14 @@ class DueDateTests(Redirector):
     def test_output_bad_due_date_with_date(self):
         self.assertIsNone(util.get_due_date('2016-14-36'))
         self.assertEqual(
-            util.DUE_DATE_ERROR,
+            util.DATE_ERROR,
             self.redirect.getvalue().rstrip()
         )
 
     def test_bad_due_date(self):
         self.assertIsNone(util.get_due_date('5z'))
         self.assertEqual(
-            util.DUE_DATE_ERROR,
+            util.DATE_ERROR,
             self.redirect.getvalue().rstrip()
         )
         self.assertIsNone(util.get_due_date('d4'))
