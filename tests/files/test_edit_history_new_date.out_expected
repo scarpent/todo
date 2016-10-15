@@ -1,0 +1,11 @@
+  #  done        note
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  1  2016-09-27  yuuuuuge
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Editing task history ('q' to cancel)...
+Number [1]: 1
+Done (YYYY-MM-DD) [2016-09-27; 'DELETE' to remove entry]: 1998-99-08
+*** Invalid date
+Done (YYYY-MM-DD) [2016-09-27; 'DELETE' to remove entry]: 1998-05-08
+Note [Use existing; {up} to edit; 'd' to delete]: 
+Task history updated

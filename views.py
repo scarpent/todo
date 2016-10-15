@@ -121,10 +121,13 @@ def _edit_task_history(task_name):
     task_num = None
     while True:
         num_items = len(instances)
+        if num_items == 1:
+            num_range = ''
+        else:
+            num_range = ' (1-{total})'.format(total=num_items)
+
         task_num = _get_response(
-            'Number (1-{total})'.format(
-                total=num_items
-            ),
+            'Number' + num_range,
             str(num_items)
         )
 
@@ -152,6 +155,7 @@ def _edit_task_history(task_name):
             elif new_done_date == 'DELETE':
                 task_instance.delete_instance()
                 print(TASK_DELETED_HISTORY + date_str)
+                print(TASK_UPDATED_HISTORY)
                 return
 
             try:

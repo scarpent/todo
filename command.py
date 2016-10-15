@@ -53,7 +53,7 @@ class Command(cmd.Cmd, object):
     def __exit__(self, exc_type, exc_value, traceback):
         db.close()
 
-    intro = 'todo wip...'
+    intro = ''
 
     prompt = '> '
 

@@ -1,0 +1,26 @@
+  #  done        note
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  1  2016-10-02  finally
+  2  (open)      
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Editing task history ('q' to cancel)...
+Number (1-2) [2]: q
+Edit cancelled
+  #  done        note
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  1  2016-10-02  finally
+  2  (open)      
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Editing task history ('q' to cancel)...
+Number (1-2) [2]: 
+Note: q
+Edit cancelled
+  #  done        note
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+  1  2016-10-02  finally
+  2  (open)      
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Editing task history ('q' to cancel)...
+Number (1-2) [2]: 1
+Done (YYYY-MM-DD) [2016-10-02; 'DELETE' to remove entry]: q
+Edit cancelled

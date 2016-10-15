@@ -132,6 +132,9 @@ class OutputTests(Redirector):
     def test_edit(self):
         pass
 
+    def test_edit_history(self):
+        pass
+
     def test_syntax_error(self):
         temp_db = init_temp_database()
         args = ArgHandler.get_args(['--database', temp_db])

@@ -86,7 +86,7 @@ def valid_history_number(number, number_of_items):
 def get_due_date(due_value):
     """
     :param due_value: see command.py do_due help docstring
-    :return: None (if invalid due_value), or datetime object for due date
+    :return: None (invalid due_value), or datetime object for due date
     """
     due_value = due_value.strip().lower()
 

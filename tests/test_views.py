@@ -247,38 +247,46 @@ class OutputTests(Redirector):
         )
 
     def test_edit_task_nonexistent(self):
-        with test_database(test_db, (Task, TaskInstance)):
-            views.edit_task_or_history('blarney')
-            self.assertEqual(
-                views.TASK_NOT_FOUND,
-                self.redirect.getvalue().rstrip()
-            )
-            self.reset_redirect()
-            # history by itself could be a task if existed
-            views.edit_task_or_history('history')
-            self.assertEqual(
-                views.TASK_NOT_FOUND,
-                self.redirect.getvalue().rstrip()
-            )
+        views.edit_task_or_history('blarney')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+        self.reset_redirect()
+        # history by itself could be a task if existed
+        views.edit_task_or_history('history')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
 
     def test_edit_task_history_task_nonexistent(self):
-        with test_database(test_db, (Task, TaskInstance)):
-            views.edit_task_or_history('history blarney')
-            self.assertEqual(
-                views.TASK_NOT_FOUND,
-                self.redirect.getvalue().rstrip()
-            )
-            self.reset_redirect()
-            views.edit_task_or_history('history history')
-            self.assertEqual(
-                views.TASK_NOT_FOUND,
-                self.redirect.getvalue().rstrip()
-            )
+        views.edit_task_or_history('history blarney')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
+        self.reset_redirect()
+        views.edit_task_or_history('history history')
+        self.assertEqual(
+            views.TASK_NOT_FOUND,
+            self.redirect.getvalue().rstrip()
+        )
 
     def test_edit_task_name_instead_of_object(self):
         with test_database(test_db, (Task, TaskInstance)):
             with self.assertRaises(AttributeError):
                 views._edit_task('blarney')
+
+    def test_edit_history_no_history(self):
+        task_name = 'george'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.edit_task_or_history('history ' + task_name)
+        self.assertEqual(
+            views.NO_HISTORY,
+            self.redirect.getvalue().rstrip()
+        )
 
 
 class DataTests(Redirector):
@@ -683,4 +691,74 @@ class EditTestsIO(MockRawInput, OutputFileTester):
         self.assertEqual(task_after.priority, task_before.priority)
         self.assertNotEqual(task_after.note, task_before.note)
         self.assertEqual(None, task_after.note)
+        self.conclude_test()
+
+    def test_edit_history_cancels(self):
+        self.init_test('test_edit_history_cancels')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            self.responses = ['q']  # quit on number
+            views.edit_task_or_history('history sharpen pencils')
+            self.responses = ['', 'q']  # quit on note
+            views.edit_task_or_history('history sharpen pencils')
+            self.responses = ['1', 'q']  # quit on date
+            views.edit_task_or_history('history sharpen pencils')
+        self.conclude_test()
+
+    def test_edit_history_delete_entry(self):
+        self.init_test('test_edit_history_delete_item')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            try:
+                TaskInstance.get(
+                    TaskInstance.done == datetime(2016, 9, 27)
+                )
+            except TaskInstance.DoesNotExist:  # pragma: no cover
+                self.fail('TaskInstance should exist but does not')
+            self.responses = ['1', 'DELETE']
+            views.edit_task_or_history('history "gather wool"')
+            with self.assertRaises(TaskInstance.DoesNotExist):
+                TaskInstance.get(
+                    TaskInstance.done == datetime(2016, 9, 27)
+                )
+        self.conclude_test()
+
+    def test_edit_history_new_date(self):
+        self.init_test('test_edit_history_new_date')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            try:
+                TaskInstance.get(
+                    TaskInstance.done == datetime(2016, 9, 27)
+                )
+            except TaskInstance.DoesNotExist:  # pragma: no cover
+                self.fail('TaskInstance should exist but does not')
+            with self.assertRaises(TaskInstance.DoesNotExist):
+                TaskInstance.get(
+                    TaskInstance.done == datetime(1998, 5, 8)
+                )
+            self.responses = ['1', '1998-99-08', '1998-05-08', '']
+            views.edit_task_or_history('history "gather wool"')
+            try:
+                TaskInstance.get(
+                    TaskInstance.done == datetime(1998, 5, 8)
+                )
+            except TaskInstance.DoesNotExist:  # pragma: no cover
+                self.fail('TaskInstance should exist but does not')
+            with self.assertRaises(TaskInstance.DoesNotExist):
+                TaskInstance.get(
+                    TaskInstance.done == datetime(2016, 9, 27)
+                )
+        self.conclude_test()
+
+    def test_edit_history_open_task_item(self):
+        self.init_test('test_edit_history_open_task_item')
+        with test_database(test_db, (Task, TaskInstance)):
+            create_test_data()
+            before = views._get_open_task_instance('just do it')
+            self.assertEqual('just think about it', before.note)
+            self.responses = ['', 'meh']
+            views.edit_task_or_history('history just do it')
+            after = views._get_open_task_instance('just do it')
+            self.assertEqual('meh', after.note)
         self.conclude_test()
