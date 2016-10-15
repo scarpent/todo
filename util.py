@@ -90,6 +90,9 @@ def get_due_date(due_value):
     """
     due_value = due_value.strip().lower()
 
+    if due_value == 'now':
+        due_value = '0h'
+
     if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due_value):
         try:
             return get_datetime_from_date_only_string(due_value)

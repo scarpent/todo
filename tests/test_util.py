@@ -306,6 +306,10 @@ class DueDateTests(Redirector):
     def test_zero(self):
         self.fuzzy_date_match(
             relativedelta(hours=0),
+            util.get_due_date('now')
+        )
+        self.fuzzy_date_match(
+            relativedelta(hours=0),
             util.get_due_date('0h')
         )
         self.assertEqual(
