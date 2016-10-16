@@ -124,7 +124,10 @@ class Command(cmd.Cmd, object):
         views.edit_task_or_history(args)
 
     def complete_edit(self, text, line, begidx, endidx):
-        return views.get_task_names(starting_with=text)
+        names = views.get_task_names(starting_with=text)
+        if 'history'.startswith(text):
+            names.append('history')
+        return names
 
     # alias command completion workaround
     complete_e = complete_edit

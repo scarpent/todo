@@ -218,29 +218,41 @@ class MiscTests(TestCase):
         create_history_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            instances = interpreter.complete_history('s', '', '', '')
-            self.assertEqual(['slay dragon', 'shave yak'], instances)
+            tasks = interpreter.complete_history('s', '', '', '')
+            self.assertEqual(['slay dragon', 'shave yak'], tasks)
 
     def test_complete_due(self):
         temp_db = init_temp_database()
         create_history_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            instances = interpreter.complete_due('cli', '', '', '')
-            self.assertEqual(['climb mountain'], instances)
+            tasks = interpreter.complete_due('cli', '', '', '')
+            self.assertEqual(['climb mountain'], tasks)
 
     def test_complete_done(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            instances = interpreter.complete_done('jus', '', '', '')
-            self.assertEqual(['just do it'], instances)
+            tasks = interpreter.complete_done('jus', '', '', '')
+            self.assertEqual(['just do it'], tasks)
 
     def test_complete_edit(self):
         temp_db = init_temp_database()
         create_test_data_for_temp_db()
         args = ArgHandler.get_args(['--database', temp_db])
         with Command(args) as interpreter:
-            instances = interpreter.complete_edit('c', '', '', '')
-            self.assertEqual(['clip toenails'], instances)
+            tasks = interpreter.complete_edit('c', '', '', '')
+            self.assertEqual(['clip toenails'], tasks)
+
+    def test_complete_edit_history(self):
+        """ history manually added to list if matching """
+        temp_db = init_temp_database()
+        args = ArgHandler.get_args(['--database', temp_db])
+        with Command(args) as interpreter:
+            tasks = interpreter.complete_edit('', '', '', '')
+            self.assertEqual(['history'], tasks)
+            tasks = interpreter.complete_edit('h', '', '', '')
+            self.assertEqual(['history'], tasks)
+            tasks = interpreter.complete_edit('s', '', '', '')
+            self.assertEqual([], tasks)
