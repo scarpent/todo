@@ -189,6 +189,7 @@ class Command(cmd.Cmd, object):
             - For units other than hours, the time will be set to 12am
             - If 0 is given, the due date will be set to right now for
               hours, and today 12am for other units
+            - "now" is an alias for 0h
             - Additional letters may be present and will be ignored,
               e.g 5days, 2hours, 1month
             - Spaces may be present between number and unit, if quoted,

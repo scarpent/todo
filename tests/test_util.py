@@ -89,6 +89,18 @@ class DateTests(TestCase):
         with self.assertRaises(ValueError):
             util.get_datetime('2016-14-36')
 
+    def test_is_due_today(self):
+        self.assertFalse(util.is_due_today(''))
+        self.assertFalse(util.is_due_today(
+            datetime.now() + relativedelta(days=1)
+        ))
+        self.assertTrue(util.is_due_today(
+            datetime.now()
+        ))
+        self.assertTrue(util.is_due_today(
+            datetime.now() - relativedelta(days=1)
+        ))
+
 
 class OutputTests(Redirector):
 
@@ -349,4 +361,28 @@ class MiscTests(TestCase):
         self.assertEqual(
             '\'bob"',
             util.remove_wrapping_quotes('\'bob"')
+        )
+
+    def test_get_colored_header_or_separator(self):
+        self.assertEqual(
+            '\x1b[0;36mbilly\x1b[0m',
+            util.get_colored_header_or_footer('billy')
+        )
+
+    def test_get_colored_due_date(self):
+        self.assertEqual('', util.get_colored_due_date(None))
+        future = datetime.now() + relativedelta(days=1)
+        self.assertEqual(
+            '\x1b[0;32m' + util.get_date_string(future) + '\x1b[0m',
+            util.get_colored_due_date(future)
+        )
+        present = datetime.now()
+        self.assertEqual(
+            '\x1b[0;31m' + util.get_date_string(present) + '\x1b[0m',
+            util.get_colored_due_date(present)
+        )
+        past = datetime.now() - relativedelta(days=1)
+        self.assertEqual(
+            '\x1b[0;31m' + util.get_date_string(past) + '\x1b[0m',
+            util.get_colored_due_date(past)
         )

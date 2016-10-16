@@ -340,32 +340,36 @@ def list_task_instances(task_name):
 
 
 def _print_task_list(tasks):
-    _print_task('p', 'due', 'task', 'note')
-    separator = '-' * 80
+    _print_task('p', 'due', 'task', 'note', header=True)
+    separator = util.get_colored_header_or_footer('-' * 80)
     print(separator)
     for task in tasks:
         _print_task(
             priority=task['priority'],
-            due=util.get_date_string(task['due']),
+            due=util.get_colored_due_date(task['due']),
             name=task['name'],
             note=task['note']
         )
     print(separator)
 
 
-def _print_task(priority='', due='', name='', note=None):
+def _print_task(priority='', due='', name='', note=None, header=False):
     note = '' if not note else note
-    print('{priority:1}  {due:10}  {name:30}  {note}'.format(
+    line = '{priority:1}  {due:10}  {name:30}  {note}'.format(
         priority=priority,
         due=due,
         name=name,
         note=note
-    ))
+    )
+    if header:
+        print(util.get_colored_header_or_footer(line))
+    else:
+        print(line)
 
 
 def _print_task_instance_list(instances):
-    _print_task_instance('#', 'done', 'note')
-    separator = '~' * 50
+    _print_task_instance('#', 'done', 'note', header=True)
+    separator = util.get_colored_header_or_footer('~' * 50)
     print(separator)
     num = 0
     for inst in instances:
@@ -378,13 +382,17 @@ def _print_task_instance_list(instances):
     print(separator)
 
 
-def _print_task_instance(num='', done='', note=None):
+def _print_task_instance(num='', done='', note=None, header=False):
     note = '' if not note else note
-    print('{num:>3}  {done:10}  {note}'.format(
+    line = '{num:>3}  {done:10}  {note}'.format(
         num=num,
         done=done if done else '(open)',
         note=note
-    ))
+    )
+    if header:
+        print(util.get_colored_header_or_footer(line))
+    else:
+        print(line)
 
 
 def _get_task_list(priority_max=util.PRIORITY_LOW, due_date_min=None):

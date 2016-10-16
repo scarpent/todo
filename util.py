@@ -83,6 +83,20 @@ def valid_history_number(number, number_of_items):
         return False
 
 
+def is_due_today(due):
+    """
+    :param due: datetime
+    :return: true if due today or before today;
+             false if empty string or due after today
+    """
+    if not due:
+        return False
+
+    due_datetime_midnight = remove_time_from_datetime(due)
+
+    return due_datetime_midnight < datetime.now()
+
+
 def get_due_date(due_value):
     """
     :param due_value: see command.py do_due help docstring
@@ -139,3 +153,19 @@ def remove_time_from_datetime(date_time):
 
 def remove_wrapping_quotes(text):
     return re.sub(r'''(['"])(.+)\1''', r'\2', text)
+
+
+def get_colored_header_or_footer(text):
+    return '\033[0;36m' + text + '\033[0m'  # cyan
+
+
+def get_colored_due_date(due):
+    if due is None:
+        return ''
+
+    if is_due_today(due):
+        color = '\033[0;31m'  # red
+    else:
+        color = '\033[0;32m'  # green
+
+    return color + get_date_string(due) + '\033[0m'
