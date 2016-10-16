@@ -5,10 +5,12 @@ from __future__ import division
 from __future__ import print_function
 from __future__ import unicode_literals
 
+import os
 import sys
 
 from arghandler import ArgHandler
 from command import Command
+from export import export_to_json
 
 
 def main(argv=None):
@@ -17,6 +19,17 @@ def main(argv=None):
         argv = sys.argv[1:]  # pragma: no cover
 
     args = ArgHandler.get_args(argv)
+
+    if args.export:
+        if not args.database:
+            print('Database is required for export')
+            return
+        elif not os.path.exists(args.database):
+            print('Database not found: ' + args.database)
+            return
+
+        export_to_json(args.database)
+        return
 
     with Command(args) as interpreter:
         if args.one_command:

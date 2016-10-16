@@ -15,7 +15,7 @@ class ArgHandler(object):
         parser = argparse.ArgumentParser(
             prog='todo.py',
             formatter_class=(
-                lambda prog: argparse.ArgumentDefaultsHelpFormatter(
+                lambda prog: argparse.HelpFormatter(
                     prog,
                     max_help_position=30
                 )
@@ -32,6 +32,12 @@ class ArgHandler(object):
             '-o', '--one-command',
             type=str, metavar='CMD',
             help='pass command to interpreter and exit afterwards'
+        )
+
+        parser.add_argument(
+            '-e', '--export',
+            action='store_true',
+            help='print todo database in json format'
         )
 
         return parser.parse_args(args)

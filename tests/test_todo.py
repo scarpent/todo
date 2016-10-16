@@ -8,10 +8,10 @@ from __future__ import unicode_literals
 import todo
 import views
 
-from tests.helpers import Redirector
 from tests.data_setup import init_temp_database
 from tests.data_setup import create_test_data
 from tests.data_setup import create_history_test_data
+from tests.helpers import Redirector
 
 
 class OutputTests(Redirector):
@@ -51,3 +51,23 @@ class OutputTests(Redirector):
             views.TASK_DELETED + 'gather wool',
             self.redirect.getvalue().rstrip()
         )
+
+    def test_export_database_not_specified(self):
+        todo.main(['--export'])
+        self.assertEqual(
+            'Database is required for export',
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_export_database_nonexistent(self):
+        db_file = 'spam-spam-spam-baked-beans.sqlite'
+        todo.main(['--export', '-d', db_file])
+        self.assertEqual(
+            'Database not found: ' + db_file,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_export_empty_database(self):
+        temp_db = init_temp_database()
+        todo.main(['--export', '--database', temp_db])
+        self.assertEqual('[]', self.redirect.getvalue().rstrip())

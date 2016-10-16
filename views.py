@@ -15,7 +15,6 @@ from playhouse.shortcuts import model_to_dict
 import util
 
 from models import *
-from models import TaskInstance, Task
 
 
 EDIT_CANCELLED = 'Edit cancelled'
