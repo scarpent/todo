@@ -202,12 +202,13 @@ class Command(cmd.Cmd, object):
         return views.get_task_names(starting_with=text)
 
     def do_done(self, args):
-        """Set done date of open task instance
+        """Set done date of open task
 
-        Syntax: done <task>
+        Syntax: done <task> [done date YYYY-MM-DD]
 
-        Sets the done date to right now. If no open task instances,
-        one will be created and then set to done.
+        Sets the done date to [done date] if specified, or right now if
+        not. If there is no open task, one will be created and then
+        marked done.
         """
         views.set_done_date(args)
 

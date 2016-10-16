@@ -101,6 +101,11 @@ class DateTests(TestCase):
             datetime.now() - relativedelta(days=1)
         ))
 
+    def test_is_date_format(self):
+        self.assertTrue(util.is_date_format('9999-99-99'))
+        self.assertTrue(util.is_date_format('9999-9-9'))
+        self.assertFalse(util.is_date_format('abc'))
+
 
 class OutputTests(Redirector):
 
@@ -174,6 +179,21 @@ class OutputTests(Redirector):
         self.assertFalse(util.valid_history_number('-1', 3))
         self.assertFalse(util.valid_history_number('87', 50))
 
+    def test_get_done_date_invalid(self):
+        result = util.get_done_date('9999-99-99')
+        self.assertIsNone(result)
+        self.assertEqual(
+            util.DATE_ERROR,
+            self.redirect.getvalue().rstrip()
+        )
+
+    def test_get_done_date_valid(self):
+        result = util.get_done_date('2016-10-16')
+        self.assertEqual(
+            datetime(2016, 10, 16, 0, 0),
+            result
+        )
+
 
 class DueDateTests(Redirector):
 
@@ -208,14 +228,14 @@ class DueDateTests(Redirector):
 
     # with hours, time may change between setting due_date and expected
     # date; using this range will be close enough for our purposes
-    def fuzzy_date_match(self, expected_delta, due_date):
+    def fuzzy_date_match(self, expected_delta, the_date):
         expected = datetime.now() + expected_delta
         self.assertGreater(
-            due_date,
+            the_date,
             expected - relativedelta(minutes=1)
         )
         self.assertLess(
-            due_date,
+            the_date,
             expected + relativedelta(minutes=1)
         )
 

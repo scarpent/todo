@@ -7,6 +7,7 @@ from __future__ import unicode_literals
 
 from datetime import date
 from datetime import datetime
+from dateutil.relativedelta import relativedelta
 
 from unittest import TestCase
 
@@ -234,10 +235,44 @@ class OutputTests(Redirector):
     def test_set_done_date_on_nonexistent_task(self):
         with test_database(test_db, (Task, TaskInstance)):
             views.set_done_date('blarney')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            views.set_done_date('blarney 2000-04-08')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            views.set_done_date('blar ney 2000-04-08')
+            self.assertEqual(
+                views.TASK_NOT_FOUND,
+                self.redirect.getvalue().rstrip()
+            )
+
+    def test_set_done_date_only_date(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.set_done_date('2016-10-16')
         self.assertEqual(
-            views.TASK_NOT_FOUND,
+            views.TASK_NAME_REQUIRED,
             self.redirect.getvalue().rstrip()
         )
+
+    def test_set_done_date_invalid_date_param(self):
+        with test_database(test_db, (Task, TaskInstance)):
+            views.set_done_date('blahtaskname 2016-55-16')
+            self.assertEqual(
+                util.DATE_ERROR,
+                self.redirect.getvalue().rstrip()
+            )
+            self.reset_redirect()
+            views.set_done_date('blah task name 2016-55-16')
+            self.assertEqual(
+                util.DATE_ERROR,
+                self.redirect.getvalue().rstrip()
+            )
 
     def test_edit_no_task_name(self):
         views.edit_task_or_history('')
@@ -537,6 +572,96 @@ class DataTests(Redirector):
                     TaskInstance.done >> None
                   ))
         self.assertEqual(expected_count, len(query))
+
+    def fuzzy_date_match(self, expected_delta, the_date):
+        expected = datetime.now() + expected_delta
+        self.assertGreater(
+            the_date,
+            expected - relativedelta(minutes=1)
+        )
+        self.assertLess(
+            the_date,
+            expected + relativedelta(minutes=1)
+        )
+
+    def test_set_done_date_default_now(self):
+        task_name = 'googly'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.set_done_date(task_name)
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            self.fuzzy_date_match(relativedelta(hours=0), inst.done)
+            self.fuzzy_date_match(relativedelta(hours=0), inst.due)
+
+    def test_set_done_date_default_now_spaces(self):
+        task_name = 'googly moogly'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.set_done_date(task_name)
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            self.fuzzy_date_match(relativedelta(hours=0), inst.done)
+            self.fuzzy_date_match(relativedelta(hours=0), inst.due)
+
+    def test_set_done_date_in_the_past(self):
+        task_name = 'googly'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.set_done_date(task_name + ' 1982-11-14')
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            self.assertEqual(
+                datetime(1982, 11, 14),
+                inst.done
+            )
+            self.assertEqual(
+                datetime(1982, 11, 14),
+                inst.due
+            )
+
+    def test_set_done_date_in_the_past_spaces(self):
+        task_name = 'googly moogly'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.set_done_date(task_name + ' 1982-11-14')
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            self.assertEqual(
+                datetime(1982, 11, 14),
+                inst.done
+            )
+            self.assertEqual(
+                datetime(1982, 11, 14),
+                inst.due
+            )
+
+    def test_set_done_date_yada(self):
+        task_name = 'googly'
+        with test_database(test_db, (Task, TaskInstance)):
+            Task.create(name=task_name, priority=1)
+            views.set_due_date(task_name + ' 5d')
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            expected = (datetime.now() + relativedelta(days=5)).replace(
+                hour=0,
+                minute=0,
+                second=0,
+                microsecond=0
+            )
+            self.assertEqual(expected, inst.due)
+            self.assertIsNone(inst.done)
+            views.set_done_date(task_name)
+            inst = TaskInstance.select().join(Task).where(
+                Task.name == task_name
+            )[0]
+            self.fuzzy_date_match(relativedelta(hours=0), inst.done)
+            self.assertEqual(expected, inst.due)
 
 
 class MockRawInput(TestCase):

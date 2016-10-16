@@ -93,7 +93,8 @@ def _edit_task(task):
 
     new_priority = None
     while True:
-        new_priority = _get_response('Priority', str(task.priority))
+        # noinspection PyCompatibility
+        new_priority = _get_response('Priority', unicode(task.priority))
         if _edit_cancelled(new_priority):
             return
         elif util.valid_priority_number(new_priority):
@@ -125,9 +126,10 @@ def _edit_task_history(task_name):
         else:
             num_range = ' (1-{total})'.format(total=num_items)
 
+        # noinspection PyCompatibility
         task_num = _get_response(
             'Number' + num_range,
-            str(num_items)
+            unicode(num_items)
         )
 
         if _edit_cancelled(task_num):
@@ -135,6 +137,7 @@ def _edit_task_history(task_name):
         elif util.valid_history_number(task_num, num_items):
             break
 
+    # noinspection PyTypeChecker
     task_instance = TaskInstance.get(
         TaskInstance.id == instances[int(task_num) - 1]['id']
     )
@@ -273,11 +276,23 @@ def set_due_date(args):
         print(TASK_DUE_DATE_SET + due_set)
 
 
-def set_done_date(task_name):
-    task_name = util.remove_wrapping_quotes(task_name)
-    if not task_name:
+def set_done_date(args):
+    args = shlex.split(args if args else '')
+
+    if not args or (len(args) == 1 and util.is_date_format(args[0])):
         print(TASK_NAME_REQUIRED)
         return
+
+    done = datetime.now().replace(microsecond=0)
+    task_name = args[0]
+    if len(args) > 1:
+        if util.is_date_format(args[-1]):
+            done = util.get_done_date(args[-1])
+            if not done:
+                return
+            task_name = ' '.join(args[:-1])
+        else:
+            task_name = ' '.join(args)
 
     try:
         Task.get(name=task_name)
@@ -287,8 +302,8 @@ def set_done_date(task_name):
 
     open_inst = _get_open_task_instance(task_name)
     if not open_inst.due:
-        open_inst.due = util.remove_time_from_datetime(datetime.now())
-    open_inst.done = datetime.now().replace(microsecond=0)
+        open_inst.due = done
+    open_inst.done = done
     open_inst.save()
     print(TASK_DONE_DATE_SET + util.get_datetime_string(open_inst.done))
 
@@ -374,8 +389,9 @@ def _print_task_instance_list(instances):
     num = 0
     for inst in instances:
         num += 1
+        # noinspection PyCompatibility
         _print_task_instance(
-            num=str(num),
+            num=unicode(num),
             done=util.get_date_string(inst['done']),
             note=inst['note']
         )

@@ -97,6 +97,18 @@ def is_due_today(due):
     return due_datetime_midnight < datetime.now()
 
 
+def get_done_date(done):
+    try:
+        return get_datetime_from_date_only_string(done)
+    except ValueError:
+        print(DATE_ERROR)
+        return None
+
+
+def is_date_format(date_string):
+    return re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', date_string)
+
+
 def get_due_date(due_value):
     """
     :param due_value: see command.py do_due help docstring
@@ -107,7 +119,7 @@ def get_due_date(due_value):
     if due_value == 'now':
         due_value = '0h'
 
-    if re.match(r'^\d{4}-\d{1,2}-\d{1,2}$', due_value):
+    if is_date_format(due_value):
         try:
             return get_datetime_from_date_only_string(due_value)
         except ValueError:
