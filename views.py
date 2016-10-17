@@ -349,6 +349,11 @@ def list_tasks(args):
 # aka history
 def list_task_instances(task_name):
     task_name = util.remove_wrapping_quotes(task_name)
+
+    if not task_name:
+        print(TASK_NAME_REQUIRED)
+        return
+
     try:
         Task.get(name=task_name)
     except Task.DoesNotExist:

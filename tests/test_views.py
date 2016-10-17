@@ -126,6 +126,13 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
+    def test_history_no_task(self):
+        views.list_task_instances('')
+        self.assertEqual(
+            views.TASK_NAME_REQUIRED,
+            self.redirect.getvalue().rstrip()
+        )
+
     def test_set_due_date_not_enough_args(self):
         views.set_due_date('blurg')
         self.assertEqual(
