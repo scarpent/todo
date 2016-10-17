@@ -6,6 +6,7 @@ from __future__ import print_function
 from __future__ import unicode_literals
 
 import re
+import shlex
 
 from datetime import datetime
 from dateutil.relativedelta import relativedelta
@@ -30,6 +31,16 @@ PRIORITY_NUMBER_ERROR = (
 DATE_ERROR = '*** Invalid date'
 HISTORY_NUMBER_ERROR = '*** Invalid number'
 HISTORY_CHOICE_ERROR = '*** Invalid choice'
+
+
+def parse_args(args):
+    # args should be a string, but we'll make sure it isn't None
+    # (which would cause the string to be read from stdin)
+    try:
+        return shlex.split(args if args else '')
+    except ValueError as e:
+        print('*** ' + e.message)
+        return None
 
 
 def get_list_sorting_key_value(x):

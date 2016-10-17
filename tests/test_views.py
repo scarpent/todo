@@ -323,6 +323,24 @@ class OutputTests(Redirector):
             self.redirect.getvalue().rstrip()
         )
 
+    def test_open_quotes(self):
+        output = '*** No closing quotation'
+        args = '"open quote'
+        views.add_task(args)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        views.edit_task_or_history(args)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        views.set_due_date(args)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        views.set_done_date(args)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        views.list_tasks(args)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+
 
 class DataTests(Redirector):
 

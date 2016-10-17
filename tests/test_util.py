@@ -194,6 +194,26 @@ class OutputTests(Redirector):
             result
         )
 
+    def test_parse_args_open_quote(self):
+        output = '*** No closing quotation'
+        result = util.parse_args('"open')
+        self.assertIsNone(result)
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        util.parse_args("'still open")
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+        self.reset_redirect()
+        util.parse_args("this also counts as open'")
+        self.assertEqual(output, self.redirect.getvalue().rstrip())
+
+    def test_parse_args_good(self):
+        args = util.parse_args('')
+        self.assertEqual([], args)
+        args = util.parse_args(None)
+        self.assertEqual([], args)
+        args = util.parse_args('a b "c d"')
+        self.assertEqual(['a', 'b', 'c d'], args)
+
 
 class DueDateTests(Redirector):
 

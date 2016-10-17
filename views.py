@@ -37,13 +37,14 @@ TASKS_DUE = 'due'
 
 
 def add_task(args):
-    # args should be a string, but we'll make sure it isn't None
-    # (which would cause the string to be read from stdin)
-    args = shlex.split(args if args else '')
+    args = util.parse_args(args)
 
-    if len(args) == 0:
+    if args is None:
+        return
+    elif len(args) == 0:
         print(TASK_NAME_REQUIRED)
         return
+
     name = args[0]
 
     priority = 1 if len(args) == 1 else args[1]
@@ -60,9 +61,11 @@ def add_task(args):
 
 
 def edit_task_or_history(args):
-    args = shlex.split(args if args else '')
+    args = util.parse_args(args)
 
-    if not args:
+    if args is None:
+        return
+    elif len(args) == 0:
         print(TASK_NAME_REQUIRED)
         return
     elif len(args) > 1 and args[0] == 'history':
@@ -248,9 +251,11 @@ def delete_task(task_name):
 
 
 def set_due_date(args):
-    args = shlex.split(args if args else '')
+    args = util.parse_args(args)
 
-    if len(args) < 2:
+    if args is None:
+        return
+    elif len(args) < 2:
         print(TASK_NAME_AND_DUE_REQUIRED)
         return
 
@@ -277,9 +282,12 @@ def set_due_date(args):
 
 
 def set_done_date(args):
-    args = shlex.split(args if args else '')
+    args = util.parse_args(args)
 
-    if not args or (len(args) == 1 and util.is_date_format(args[0])):
+    if args is None:
+        return
+    elif len(args) == 0 or \
+            (len(args) == 1 and util.is_date_format(args[0])):
         print(TASK_NAME_REQUIRED)
         return
 
@@ -309,9 +317,11 @@ def set_done_date(args):
 
 
 def list_tasks(args):
-    args = shlex.split(args if args else '')
+    args = util.parse_args(args)
 
-    if TASKS_DUE in args:
+    if args is None:
+        return
+    elif TASKS_DUE in args:
         args.remove(TASKS_DUE)
         due_date_min = datetime.now()
     else:
