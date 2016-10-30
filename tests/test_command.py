@@ -150,7 +150,7 @@ class OutputTests(Redirector):
         """ crudely verify basic commands """
         temp_db = init_temp_database()
         commands = [
-            'help', 'h',
+            'help',
             'aliases',
             'quit', 'q', 'EOF',
             'list', 'l', 'll',
