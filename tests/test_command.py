@@ -1,26 +1,23 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (
+    absolute_import, division, print_function, unicode_literals
+)
 
 import os
-
 from unittest import TestCase
 
 import command
 import util
 import views
-
 from arghandler import ArgHandler
 from command import Command
-from models import Task
-from models import TaskInstance
-
-from tests.data_setup import create_history_test_data_for_temp_db
-from tests.data_setup import create_test_data_for_temp_db
-from tests.data_setup import init_temp_database
+from models import Task, TaskInstance
+from tests.data_setup import (
+    create_history_test_data_for_temp_db,
+    create_test_data_for_temp_db,
+    init_temp_database
+)
 from tests.helpers import Redirector
 
 

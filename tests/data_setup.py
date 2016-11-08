@@ -1,24 +1,19 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (
+    absolute_import, division, print_function, unicode_literals
+)
 
 import os
 import sys
-
 from datetime import datetime
 
 from peewee import SqliteDatabase
 
 import util
-
 from arghandler import ArgHandler
 from command import Command
-from models import Task
-from models import TaskInstance
-
+from models import Task, TaskInstance
 
 test_db = SqliteDatabase(':memory:')
 TEST_FILES_DIR = 'tests/files/'

@@ -1,31 +1,25 @@
 #!/usr/bin/env python
 
-from __future__ import absolute_import
-from __future__ import division
-from __future__ import print_function
-from __future__ import unicode_literals
+from __future__ import (
+    absolute_import, division, print_function, unicode_literals
+)
 
-from datetime import date
-from datetime import datetime
-from dateutil.relativedelta import relativedelta
-
+from datetime import date, datetime
 from unittest import TestCase
 
-from playhouse.test_utils import test_database
-from playhouse.test_utils import count_queries
+from dateutil.relativedelta import relativedelta
+from playhouse.test_utils import count_queries, test_database
 
 import util
 import views
-
-from models import Task
-from models import TaskInstance
-
-from tests.data_setup import create_history_test_data
-from tests.data_setup import create_test_data
-from tests.data_setup import create_sort_test_data
-from tests.data_setup import test_db
-from tests.helpers import OutputFileTester
-from tests.helpers import Redirector
+from models import Task, TaskInstance
+from tests.data_setup import (
+    create_history_test_data,
+    create_sort_test_data,
+    create_test_data,
+    test_db
+)
+from tests.helpers import OutputFileTester, Redirector
 
 
 class FileTests(OutputFileTester):
