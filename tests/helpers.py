@@ -9,9 +9,8 @@ OutputFileTester: Redirect standard out to file for easier diffing and
                   files in a standard location with standard suffixes.
 """
 
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals
-)
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import filecmp
 import sys

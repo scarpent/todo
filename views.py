@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals
-)
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import readline
 from datetime import datetime
 
-from peewee import fn, IntegrityError, JOIN
+from peewee import JOIN, IntegrityError, fn
 from playhouse.shortcuts import model_to_dict
 
 import util

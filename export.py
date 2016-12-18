@@ -1,13 +1,12 @@
 #!/usr/bin/env python
 
-from __future__ import (
-    absolute_import, division, print_function, unicode_literals
-)
+from __future__ import (absolute_import, division, print_function,
+                        unicode_literals)
 
 import json
 
 import util
-from models import db, Task, TaskInstance
+from models import Task, TaskInstance, db
 
 
 def export_to_json(db_file):
