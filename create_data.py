@@ -22,6 +22,7 @@ db.connect()
 def create_task(name, note, priority):
     return Task.create(name=name, note=note, priority=priority)
 
+
 pencils = create_task(
     name='sharpen pencils', note='pencil note', priority=2
 )
@@ -41,6 +42,7 @@ goner = create_task(name='goner', note="'tis deleted", priority=9)
 
 def create_instance(task, note, due, done=None):
     return TaskInstance.create(task=task, note=note, due=due, done=done)
+
 
 create_instance(pencils, 'glirb', datetime(2016, 10, 1))
 create_instance(pencils, '', datetime(2016, 10, 2))
